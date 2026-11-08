@@ -4,16 +4,12 @@ __pycache__/
 venv/
 .env
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.vscode/
-.idea/
-.DS_Store
+*.egg-info/
 build/
 dist/
-*.egg-info/
+scratch/
+# Confidential inputs and real-data outputs stay local (they go in the submission archive, not the repo).
 data/*.xlsx
 data/*.xls
-prototype/output/*.json
-prototype/output/*.csv
-!prototype/output/.gitkeep
+artifacts/
+submission/
