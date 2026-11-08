@@ -1,0 +1,149 @@
+# Final report: KCCS Sentinel adjudication case study
+
+**Candidate:** Zulfiqar · **Prepared:** 8 November 2026 · **For:** Kestrel Cold Chain Solutions, Platform Engineering (brief circulated 18 Sep 2026)
+**Status:** a working prototype with a written design. It is not production software, and it makes no compliance claims.
+
+---
+
+## 1. Where I landed
+
+The brief's own conclusion holds once tested against the pack. Kestrel does not need a better disposition predictor. It needs to **assemble an admissible, tenant-safe, temporally correct evidence basis** for a human decision, and to preserve that basis so it can be reproduced years later.
+
+- **Overrides:** by my reading, about 20 of the 24 written override reasons are evidence failures, for example:
+  - a withdrawn or overlapping SOP revision (EXC-110490);
+  - a study for the wrong presentation (EXC-110497);
+  - the wrong carrier legal entity (EXC-110581);
+  - a cross-tenant precedent (EXC-110511).
+- **Incidents:** all six are failures of evidence, version or isolation control.
+
+I keep four things separate everywhere:
+1. **Non-actionable alert closure.** No product decision is involved.
+2. **Product disposition.** A regulated human decision, always signed by a person.
+3. **Regulatory notification.** Its own clock, running from alert receipt; waits never pause it.
+4. **Carrier liability.** It decides who pays, never what happens to the product.
+
+**What I built (the part that would keep me up at night):** a tenant-scoped, temporally correct **evidence-resolution and replay kernel**, run against the real workbook. For any alert, at any knowledge cutoff, it produces a content-addressed assessment with:
+- resolved and unresolved entities;
+- selected and rejected evidence, with reasons;
+- conflicts, missing inputs and required human actions;
+- the notification deadline;
+- an execution manifest.
+
+It abstains rather than guesses. Corrections produce new assessments; nothing is ever edited.
+
+**First customer:** **T-KAVERI**.
+- It has no residency clause, permits model APIs (none are needed), needs a single signer and English output, and has the lowest-risk notification regime.
+- It is the brief's own exemplar.
+- Its overlapping SOP revisions and two handwritten annexures exercise the abstain-and-route path honestly.
+
+Go-live is a reviewer aid plus evidence packages plus the notification ledger, within 90 days. Other tenants follow by constraint class over nine months (`docs/01` §6).
+
+**Board targets challenged:**
+- **70% closed without a person:** the denominator must be all alerts, and only closures with no product decision count. I propose a "safe closure" target measured by an audit sample.
+- **Median below 24 h:** it hides the lab-wait tail, so report p90 and age per wait state alongside it.
+- **No late notifications:** software cannot guarantee this. We commit to 100% obligation creation at receipt, deadline-first queues and measured breaches.
+- **Cost ceiling and seven-year basis:** accepted. The design uses about $553–575 of the ~$2,939/month ceiling. "No LLM" is a supported route for API-prohibited tenants, because one always-on self-hosted GPU is $4,139/month.
+
+## 2. What the prototype shows on the real data
+
+**EXC-107133**, the brief's case, reproduced from data alone:
+- **Product:** GTIN 08901234500035 resolves within T-KAVERI (`02!R57`). The same GTIN exists for 3 other tenants with different studies.
+- **SOP:** SOP-KAV-9392 **Rev 02 and Rev 03 are both in force** on 2026-07-28 at the origin site (Asia/Kolkata). This is reported as a blocking conflict; no revision is chosen.
+- **Stability:**
+  - The product master points to **STB-3584**, which is a *vial*, *accelerated*, *partially readable* study. It is rejected.
+  - **STB-2738** (pen, "one excursion up to 6 h below 15 °C") is offered as an unreferenced candidate.
+  - Its limit conflicts with the master's "cumulative 72 h above 8 °C".
+- **Reviewer arithmetic:** within the stated single-excursion limit *for this event only*. "Once only" and "cumulative" are unverifiable because there is no batch history.
+- **Notification:** due 2026-08-12T06:31Z if notifiable (India 15-day regime from the alert time 06:31, not the 06:14 excursion start).
+- **Result:** abstain, with named human actions, including signature by Site QA.
+
+**Time and corrections:**
+- **Firmware bulletin:** a TT-2.14.3 alert raised before the 11 Apr 2026 bulletin shows no firmware finding at alert time. Viewed as at extract, it does, and a reopen review is recommended. The original assessment is unchanged.
+- **Simulated correction:** a clearly labelled correction to the product master produces a new assessment that `supersedes` the old one. The old row's hash is unchanged, and an at-alert replay reproduces the original ID exactly.
+
+**Isolation:**
+- Cross-tenant reads are denied and audited.
+- Stability ownership comes from `tenant_code`, never the folder. STB-4764 and STB-6586 are filed in each other's competitor folders.
+- Untenanted product aliases are quarantined because of Meridian's Cl.22.
+
+**Across all 420 alerts** (stratified evidence pack; **not** population accuracy or automation estimates):
+- **Abstentions:** every alert abstains. Two gaps are pack-wide: no temperature series, and no SOP content. Every alert also has at least one case-specific blocker.
+- **Most common case-specific blockers:**
+  - no excursion SOP indexed for **T-VIRENT** (164);
+  - inadmissible referenced study (153);
+  - no admissible study (130);
+  - master vs study conflict (116);
+  - unresolved product (81).
+- **Override reasons (24):** the concern is surfaced in 13, generically in 1 and missed in 1 (EXC-110476). The rest are out of scope or handled by another track.
+- **Notification clock:** matches the pack's late/on-time flags on all 19 rows it can compute. It refuses to guess "next business day" for 9 rows.
+- **Engine auto-closures:** 273 of the 275 engine AUTO_CLOSE rows have case-specific evidence gaps. These are candidates for a closure audit, not proof of error.
+
+## 3. Important workbook findings
+
+The full list is in `docs/04`; the generated report is `artifacts/data_quality/report.md`.
+
+**SOP index:**
+- 27 overlapping SOP revision pairs across 10 documents.
+- SOP-MER-5228 has three open-ended revisions, and Rev 05 takes effect before Rev 04.
+- T-VIRENT, the largest tenant, has **no excursion SOP indexed**.
+
+**Stability and product master:**
+- 8 product-master study references point at a different presentation.
+- 4 unreadable studies carry limit text, which contradicts the README.
+- 11 GTINs are shared across tenants.
+
+**Reviewer log:** 2 of 200 rows break the README's reconciliation rule (EXC-111001, EXC-111785).
+
+**Time and narrative:**
+- Memphis's timezone is wrong (Chicago, not New York); a second wrong site cannot be confirmed.
+- The pack encodes "next business day" as 24 h, which is not equivalent.
+- The brief's 06:14 is the excursion start, and the alert came at 06:31. Its 09:30 UTC pickup conflicts with log QL-02111 (06:54 UTC).
+
+**Prior reviewer reasoning is not ground truth.** EXC-110448's "probably inside spec" does not follow: under-reporting means the true temperature was higher, and the event was a cold excursion that stays below 2 °C even with the full +1.8 °C.
+
+## 4. Implemented vs stubbed vs design-only
+
+| Implemented and tested | Stubbed or simulated (labelled) | Design only |
+|---|---|---|
+| Ingestion with provenance; append-only bitemporal store; tenant access control and audit; resolution and human mappings; SOP temporal/site selection; stability admissibility; limit and firmware-band arithmetic; telemetry flags; strict and reconstructed replay; manifest and content-hash IDs; supersession; evidence packages; notification clock and state machine (in-memory reference); data-quality report; evaluation layer | Telemetry archive, document content, batch history, regulator gateway; one simulated correction; synthetic fixtures for missing edge cases | Case workflow, leases and dual signature; outbox and durable timers; regional cells; source connectors; LLM drafting route; per-tenant indexes; WORM; monitoring and runbooks |
+
+## 5. Verification actually executed
+
+All of the following ran in this session's sandbox (Python 3.12.3):
+
+- `pytest`: **76 passed**. The output is regenerated to `artifacts/test_output.txt` by `scripts/run_all.sh`.
+- `kccs-evidence demo`: ingested 1,413 source records (re-ingest: 0 new, so idempotent), and built 841 assessments in two knowledge views plus one post-correction view.
+- **Evidence packages:** exported and re-verified for the selected real cases.
+- **Isolation:** cross-tenant access was denied with exit code 3.
+- **Clean install:** `scripts/run_all.sh` passed in a fresh clone with a fresh virtualenv (see the commit log).
+
+Not executed: anything in the "design only" column, load and failover tests, and RPO/RTO drills. All thresholds and costs are proposals or assumptions.
+
+## 6. Known limitations and what I still need to do before sending
+
+**Limitations:**
+- The pack lacks the inputs a real "ready" verdict needs (series, SOP content, batch history), so the demo shows abstention quality, not throughput.
+- Several interpretations need QA and Regulatory Affairs sign-off: scope mapping, presentation lexicon, regimes and bulletin semantics.
+- The product-alias quarantine costs coverage by design.
+
+**Before sending:**
+- [ ] Fill in time spent (`docs/06` §3 and the email).
+- [ ] Review and own each position.
+- [ ] Attach or describe the session export.
+- [ ] Confirm the recipient: the brief names sudhanshu@fourkites.com.
+
+## 7. How to run and where to look
+
+```bash
+cp /path/to/KCCS_Sentinel_Reference_Data_Pack.xlsx data/
+scripts/run_all.sh
+```
+
+Then read, in order:
+1. `docs/01_where_we_land.md`
+2. `artifacts/cases/EXC-107133_at_alert.json`
+3. `artifacts/evaluation/summary.md`
+4. `docs/02`–`05`
+5. `docs/06_working_log.md`
+
+`docs/07_review_walkthrough.md` is the 20-minute walkthrough, with five hard questions and a rehearsed change response.
