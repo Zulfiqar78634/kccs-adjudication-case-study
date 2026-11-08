@@ -46,6 +46,13 @@ Go-live is a reviewer aid plus evidence packages plus the notification ledger, w
 
 ## 2. What the prototype shows on the real data
 
+**Why every alert abstains, and why that is the correct result.** The kernel is built to refuse unsupported conclusions. The pack lacks exactly the inputs a defensible disposition needs:
+- the temperature series (only aggregates are provided);
+- SOP acceptance-limit content (the pack is an index only);
+- batch exposure history.
+
+So abstaining is right. What matters is how much it still does. For every alert it resolves entities within the tenant, names the SOP revision in force (or the conflict), accepts or rejects each stability study with a reason, computes the notification deadline, lists the exact human actions needed, and stays replayable bit-for-bit.
+
 **EXC-107133**, the brief's case, reproduced from data alone:
 - **Product:** GTIN 08901234500035 resolves within T-KAVERI (`02!R57`). The same GTIN exists for 3 other tenants with different studies.
 - **SOP:** SOP-KAV-9392 **Rev 02 and Rev 03 are both in force** on 2026-07-28 at the origin site (Asia/Kolkata). This is reported as a blocking conflict; no revision is chosen.
@@ -67,7 +74,7 @@ Go-live is a reviewer aid plus evidence packages plus the notification ledger, w
 - Untenanted product aliases are quarantined because of Meridian's Cl.22.
 
 **Across all 420 alerts** (stratified evidence pack; **not** population accuracy or automation estimates):
-- **Abstentions:** every alert abstains. Two gaps are pack-wide: no temperature series, and no SOP content. Setting those aside, **8 alerts** (4 T-CAMPOS, 4 T-PINNACLE; listed in `docs/05`) have no case-specific blocker, and the other 412 each have at least one.
+- **Abstentions:** every alert abstains. Two gaps are pack-wide: no temperature series, and no SOP content. Setting those aside, **8 alerts** have no case-specific blocker (table below), and the other 412 each have at least one.
 - **Most common case-specific blockers:**
   - no excursion SOP indexed for **T-VIRENT** (164);
   - inadmissible referenced study (153);
@@ -77,6 +84,19 @@ Go-live is a reviewer aid plus evidence packages plus the notification ledger, w
 - **Override reasons (24):** the concern is surfaced in 13, generically in 1 and missed in 1 (EXC-110476). The rest are out of scope or handled by another track.
 - **Notification clock:** matches the pack's late/on-time flags on all 19 rows it can compute. It refuses to guess "next business day" for 9 rows.
 - **Engine auto-closures:** 273 of the 275 engine AUTO_CLOSE rows have case-specific evidence gaps. These are candidates for a closure audit, not proof of error.
+
+**The 8 alerts blocked only by pack-wide gaps** (at-alert view; each is reproducible from `artifacts/kernel.sqlite`). Each one has a resolved product, a resolved origin site, a single SOP revision in force and an admissible referenced stability study. Their stability check results differ, which is why a human still decides:
+
+| Event | Tenant | SOP in force (origin) | Stability study | Check against the study's limit | Notification deadline |
+|---|---|---|---|---|---|
+| EXC-110091 | T-CAMPOS | SOP-CAM-2549 Rev 04 | STB-7140 | Exceeds stated limit | 2026-04-01T13:41Z (120 h) |
+| EXC-110182 | T-CAMPOS | SOP-CAM-2549 Rev 04 | STB-7140 | Exceeds stated limit | 2026-04-06T04:57Z (120 h) |
+| EXC-110595 | T-CAMPOS | SOP-CAM-2549 Rev 04 | STB-9763 | Cumulative limit, unverifiable | 2026-03-07T20:01Z (120 h) |
+| EXC-112450 | T-CAMPOS | SOP-CAM-2549 Rev 04 | STB-9763 | Cumulative limit, unverifiable | 2025-12-30T23:22Z (120 h) |
+| EXC-110406 | T-PINNACLE | SOP-PIN-5591 Rev 03 | STB-3324 | Not applicable (cold excursion) | not computed: "next business day" policy incomplete |
+| EXC-110511 | T-PINNACLE | SOP-PIN-5591 Rev 03 | STB-3324 | Within stated limit, this event only | not computed |
+| EXC-112219 | T-PINNACLE | SOP-PIN-5591 Rev 03 | STB-3324 | Within stated limit, this event only | not computed |
+| EXC-112317 | T-PINNACLE | SOP-PIN-5591 Rev 03 | STB-3324 | Not applicable (cold excursion) | not computed |
 
 ## 3. Important workbook findings
 
@@ -100,6 +120,18 @@ The full list is in `docs/04`; the generated report is `artifacts/data_quality/r
 - The brief's 06:14 is the excursion start, and the alert came at 06:31. Its 09:30 UTC pickup conflicts with log QL-02111 (06:54 UTC).
 
 **Prior reviewer reasoning is not ground truth.** EXC-110448's "probably inside spec" does not follow: under-reporting means the true temperature was higher, and the event was a cold excursion that stays below 2 °C even with the full +1.8 °C.
+
+**Observed facts vs system interpretations.** The facts come straight from the data. The interpretations are policies I chose for the prototype. Each is a versioned config or rule that QA or Regulatory Affairs must approve before production use.
+
+| Observed fact (from the pack) | System interpretation (current policy) | Approval needed from |
+|---|---|---|
+| SOP-KAV-9392 Rev 02 `[2025-09-01, 2026-08-31)` and Rev 03 `[2026-05-16, open)` both cover 2026-07-28 | Overlap is a **blocking** conflict; no revision is chosen by number or row order | Tenant document control / QA |
+| 115 revision hand-overs have `effective_to` equal to the next `effective_from` | Effective dates are half-open `[from, to)` site-local calendar dates | QA |
+| Scope texts such as "Bhiwandi and Kundli only" | Mapped to registry site codes in `config/sop_scope_rules.json` | QA |
+| Study text "Rinvatec PFS 40 — vial"; label "Glucodyne SoloJet" | The study's presentation comes from its suffix; "SoloJet" means a pen (`config/reference_facts.json`) | Tenant QA |
+| Bulletin TT-CB-114: TT-2.14.3 under-reports "by up to 1.8 °C"; incident dated 2026-04-11 | An interval [0, +1.8] °C, known from 2026-04-11, applied to all TT-2.14.3 readings | QA + vendor |
+| Reportable rows carry `reg_window_hours` (72, 120, 360, 24) | Per-tenant regimes; "next business day" is not computed until a timezone and calendar are given | Regulatory Affairs |
+| `07` product aliases have no tenant column | Quarantined (Meridian Cl.22); not used for resolution | Commercial Counsel / QA |
 
 ## 4. Implemented vs stubbed vs design-only
 
