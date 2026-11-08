@@ -1,6 +1,0 @@
-services:
-  adjudication:
-    build: .
-    volumes:
-      - ./data:/app/data
-      - ./prototype/output:/app/prototype/output

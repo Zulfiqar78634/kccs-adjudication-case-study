@@ -1,2 +1,0 @@
-event_id,alert_ts_utc,product_ref,facility_ref,temperature,reg_window_hours
-EVT-001,2026-01-01T12:00:00Z,PROD-1,FAC-1,11.0,48

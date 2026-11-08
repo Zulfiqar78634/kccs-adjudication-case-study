@@ -1,0 +1,57 @@
+{
+  "config_name": "reference_facts",
+  "version": "1.0.0",
+  "status": "PROTOTYPE_INTERPRETATION_REQUIRES_QA_APPROVAL",
+  "presentation_lexicon": {
+    "note": "Explicit presentation tokens only. A product with no token has presentation UNKNOWN, which is never treated as a match.",
+    "tokens": [
+      {"token": "pre-filled syringe", "presentation": "PRE_FILLED_SYRINGE"},
+      {"token": "prefilled syringe", "presentation": "PRE_FILLED_SYRINGE"},
+      {"token": "pfs", "presentation": "PRE_FILLED_SYRINGE"},
+      {"token": "vial", "presentation": "VIAL"},
+      {"token": "pen", "presentation": "PEN"},
+      {"token": "solojet", "presentation": "PEN", "brand_derived": true, "source": "Brief §2 p.2 (EXC-107133: 'Two were for the vial, not the pen' for Glucodyne SoloJet)"},
+      {"token": "tabs", "presentation": "TABLET"},
+      {"token": "tablet", "presentation": "TABLET"},
+      {"token": "sachet", "presentation": "SACHET"},
+      {"token": "crt presentation", "presentation": "CRT_PRESENTATION", "source": "07_Alias_Observations!R207"}
+    ]
+  },
+  "firmware_bulletins": [
+    {
+      "bulletin_id": "TT-CB-114",
+      "vendor": "ThermaTrace",
+      "firmware": "TT-2.14.3",
+      "direction": "UNDER_REPORTS",
+      "magnitude_c_min": 0.0,
+      "magnitude_c_max": 1.8,
+      "exact_correction_known": false,
+      "known_from_utc": "2026-04-11T00:00:00Z",
+      "source": "14_Incident_Log!R5 (INC-2506); 00_README!R33",
+      "assumptions": [
+        "'up to 1.8 °C' is treated as an interval [0, 1.8] °C, not a fixed offset.",
+        "Knowledge time is taken as the incident date 2026-04-11 00:00 UTC; the actual bulletin receipt time is not in the pack.",
+        "All readings from TT-2.14.3 are treated as affected regardless of date; the pack does not state an affected date range."
+      ]
+    }
+  ],
+  "facility_timezone_flags": [
+    {"site": "MEM-CS-02", "registry_value": "America/New_York", "issue": "Memphis, Tennessee observes US Central time (America/Chicago). Registry value is wrong.", "status": "CONFIRMED_WRONG", "source": "00_README!R31; 03_Facility_Registry!R52-R56"},
+    {"site": "IND-CS-01", "registry_value": "America/New_York", "issue": "Indianapolis canonical IANA zone is America/Indiana/Indianapolis (same offsets as New York since 2007). README says two sites are wrong; the second could not be identified with certainty.", "status": "SUSPECT", "source": "00_README!R31; 03_Facility_Registry!R57-R61"}
+  ],
+  "notification_regimes": {
+    "note": "Regimes per tenant. Values marked OBSERVED were inferred from 01_Excursion_Events.reg_window_hours on rows the source flagged reportable and from 13_Volume_And_Cost!R22; Regulatory Affairs must confirm. Whether an individual event is notifiable is a human determination.",
+    "T-AURA": {"kind": "ELAPSED_HOURS", "hours": 72, "status": "OBSERVED", "source": "13_Volume_And_Cost!R22; 01 reg_window_hours=72"},
+    "T-NORDIA": {"kind": "ELAPSED_HOURS", "hours": 72, "status": "OBSERVED", "source": "13_Volume_And_Cost!R22; 01 reg_window_hours=72"},
+    "T-CAMPOS": {"kind": "ELAPSED_HOURS", "hours": 120, "status": "OBSERVED", "source": "12_Tenant_Constraints!R8 ('5 calendar day'); 01 reg_window_hours=120", "open_question": "Is day 5 counted to end of local calendar day? Pack encodes 120 elapsed hours."},
+    "T-PINNACLE": {"kind": "NEXT_BUSINESS_DAY", "status": "POLICY_INCOMPLETE", "source": "13_Volume_And_Cost!R22; 01 reg_window_hours=24", "open_question": "Which US state, which timezone, which holiday calendar, and is 'next business day' start or end of day? The pack encodes it as 24 h, which is not equivalent."},
+    "T-MERIDIAN": {"kind": "NEXT_BUSINESS_DAY", "status": "POLICY_INCOMPLETE", "source": "13_Volume_And_Cost!R22; 01 reg_window_hours=24", "open_question": "As T-PINNACLE."},
+    "T-VIRENT": {"kind": "ELAPSED_HOURS", "hours": 360, "status": "OBSERVED", "applicability": "India, notifiable products only; product notifiability is not in the pack", "source": "13_Volume_And_Cost!R22; 01 reg_window_hours=360"},
+    "T-SAHYADRI": {"kind": "ELAPSED_HOURS", "hours": 360, "status": "OBSERVED", "applicability": "India, notifiable products only", "source": "13_Volume_And_Cost!R22; 01 reg_window_hours=360"},
+    "T-KAVERI": {"kind": "ELAPSED_HOURS", "hours": 360, "status": "OBSERVED", "applicability": "India, notifiable products only", "source": "13_Volume_And_Cost!R22; 01 reg_window_hours=360"}
+  },
+  "product_alias_policy": {
+    "value": "QUARANTINE_UNATTRIBUTED",
+    "reason": "07_Alias_Observations has no tenant column and was compiled across the whole platform (00_README!R18). A product alias may be derived from MERIDIAN data; MSA Cl.22 (12_Tenant_Constraints!R6) forbids derived artefacts built on it being used for another customer. Product aliases are therefore not consulted until tenant-attributed and approved. Facility and carrier aliases concern Kestrel-owned entities and are used as provisional hints only."
+  }
+}

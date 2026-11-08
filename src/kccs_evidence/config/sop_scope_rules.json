@@ -1,0 +1,26 @@
+{
+  "config_name": "sop_scope_rules",
+  "version": "1.0.0",
+  "status": "PROTOTYPE_INTERPRETATION_REQUIRES_QA_APPROVAL",
+  "note": "Interprets the 15 distinct 05_SOP_Index.applies_to_facilities_text values. Site names were mapped to registry site codes using 03_Facility_Registry name_in_source/code_in_source. In production each interpretation is a human-approved, versioned assertion.",
+  "country_groups": {"EU": ["NL", "DK", "DE"], "US": ["US"], "IN": ["IN"], "BR": ["BR"]},
+  "rules": {
+    "All sites": {"kind": "ALL"},
+    "All US sites": {"kind": "COUNTRY", "countries": ["US"]},
+    "All EU sites": {"kind": "COUNTRY", "countries": ["NL", "DK", "DE"]},
+    "All India sites": {"kind": "COUNTRY", "countries": ["IN"]},
+    "Schiphol Pharma Hub only": {"kind": "SITES", "sites": ["AMS-CS-01"], "source": "03_Facility_Registry!R27"},
+    "EWR-CS-01, MEM-CS-02": {"kind": "SITES", "sites": ["EWR-CS-01", "MEM-CS-02"]},
+    "BLR-CS-02 only": {"kind": "SITES", "sites": ["BLR-CS-02"]},
+    "AMS-CS-01, AMS-CS-02": {"kind": "SITES", "sites": ["AMS-CS-01", "AMS-CS-02"]},
+    "Bhiwandi and Kundli only": {"kind": "SITES", "sites": ["BOM-NX-04", "DEL-CS-07"], "source": "03_Facility_Registry!R12,R17"},
+    "All sites except Kundli": {"kind": "ALL_EXCEPT", "sites": ["DEL-CS-07"], "source": "03_Facility_Registry!R17"},
+    "GRU-CS-01 only": {"kind": "SITES", "sites": ["GRU-CS-01"]},
+    "Guarulhos and Viracopos": {"kind": "SITES", "sites": ["GRU-CS-01", "VCP-CS-02"], "source": "03_Facility_Registry!R62,R67"},
+    "Newark Biologics Depot only": {"kind": "SITES", "sites": ["EWR-CS-01"], "source": "03_Facility_Registry!R47"},
+    "Whitefield, Nelamangala": {"kind": "SITES", "sites": ["BLR-CS-02", "BLR-CS-01"], "source": "03_Facility_Registry!R2,R7"},
+    "Site-specific — see Annexure 1": {"kind": "ANNEXURE", "annexure": "Annexure 1"}
+  },
+  "excursion_titles": ["Temperature Excursion Management"],
+  "notification_titles": ["Regulatory Reporting of Product Deviations"]
+}
