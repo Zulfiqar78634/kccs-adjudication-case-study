@@ -130,7 +130,7 @@ Not executed: anything in the "design only" column, load and failover tests, and
 - [ ] Fill in time spent (`docs/06` §3 and the email).
 - [ ] Review and own each position.
 - [ ] Attach or describe the session export.
-- [ ] Confirm the recipient: the brief names sudhanshu@fourkites.com.
+- [ ] Send as a reply to Sangeeta's 4 Nov instructions email, cc sudhanshu@fourkites.com (brief §10).
 
 ## 7. How to run and where to look
 

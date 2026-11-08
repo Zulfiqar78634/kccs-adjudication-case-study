@@ -27,5 +27,5 @@
 | Fill in time spent | `docs/06` §3, `docs/submission_email.md` | ☐ |
 | Read and own every position in `docs/01` | | ☐ |
 | Attach the session export or state it is unavailable | `docs/06` §3 | ☐ |
-| Confirm recipient: the brief says **sudhanshu@fourkites.com** | `docs/submission_email.md` | ☐ |
+| Reply to Sangeeta's 4 Nov email, cc **sudhanshu@fourkites.com** (brief §10) | `docs/submission_email.md` | ☐ |
 | Send the archive **without** the workbook (it is excluded by default) | `submission/` | ☐ |
