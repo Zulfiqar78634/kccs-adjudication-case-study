@@ -67,7 +67,7 @@ Go-live is a reviewer aid plus evidence packages plus the notification ledger, w
 - Untenanted product aliases are quarantined because of Meridian's Cl.22.
 
 **Across all 420 alerts** (stratified evidence pack; **not** population accuracy or automation estimates):
-- **Abstentions:** every alert abstains. Two gaps are pack-wide: no temperature series, and no SOP content. Every alert also has at least one case-specific blocker.
+- **Abstentions:** every alert abstains. Two gaps are pack-wide: no temperature series, and no SOP content. Setting those aside, **8 alerts** (4 T-CAMPOS, 4 T-PINNACLE; listed in `docs/05`) have no case-specific blocker, and the other 412 each have at least one.
 - **Most common case-specific blockers:**
   - no excursion SOP indexed for **T-VIRENT** (164);
   - inadmissible referenced study (153);
@@ -113,7 +113,7 @@ All of the following ran in this session's sandbox (Python 3.12.3):
 
 - `pytest`: **76 passed**. The output is regenerated to `artifacts/test_output.txt` by `scripts/run_all.sh`.
 - `kccs-evidence demo`: ingested 1,413 source records (re-ingest: 0 new, so idempotent), and built 841 assessments in two knowledge views plus one post-correction view.
-- **Evidence packages:** exported and re-verified for the selected real cases.
+- **Evidence packages:** 6 exported and re-verified for the selected real cases.
 - **Isolation:** cross-tenant access was denied with exit code 3.
 - **Clean install:** `scripts/run_all.sh` passed in a fresh clone with a fresh virtualenv (see the commit log).
 

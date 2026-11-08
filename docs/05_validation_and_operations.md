@@ -7,7 +7,7 @@ Executed in this session (the full output is regenerated into `artifacts/test_ou
 ```
 python -m pytest -v      → 76 passed (Python 3.12.3, openpyxl 3.1.5, pytest 8.3.5)
 kccs-evidence demo …     → 420 events × 2 knowledge views = 840 assessments (+1 after the simulated correction);
-                           42 evidence packages exported and re-verified OK; cross-tenant read denied and audited
+                           6 evidence packages (selected real cases) exported and re-verified OK; cross-tenant read denied and audited
 ```
 
 ### Test → requirement map
@@ -53,7 +53,7 @@ kccs-evidence demo …     → 420 events × 2 knowledge views = 840 assessments
 
 > These are **not** population accuracy, automation or closure estimates. The pack is stratified, the kernel never outputs a disposition, and prior outcomes are not ground truth.
 
-- **Status:** all 420 alerts abstain in both views. Two gaps are **pack-wide**: no temperature series, and no SOP content. Even setting those aside, **every** event has at least one case-specific blocker.
+- **Status:** all 420 alerts abstain in both views. Two gaps are **pack-wide**: no temperature series, and no SOP content. Setting those aside, **8 events** (T-CAMPOS: EXC-110091, EXC-110182, EXC-110595, EXC-112450; T-PINNACLE: EXC-110406, EXC-110511, EXC-112219, EXC-112317) have no case-specific blocker. They would reach READY_FOR_QA_REVIEW once the series and SOP limit are captured. The other 412 each have at least one case-specific blocker.
 - **Most frequent case-specific blockers (at alert):**
 
   | Blocker | Events |

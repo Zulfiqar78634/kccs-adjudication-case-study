@@ -16,7 +16,7 @@
 ## Five hard questions
 
 **1. "Everything abstains. What use is a system that says no 420 times?"**
-Two blockers (no series, no SOP content) are artefacts of the pack; in production the series is snapshotted at ingest and SOP limits are transcribed once per revision. The remaining blockers are real, specific and actionable: "Rev 02 and Rev 03 overlap", "master points at the vial study". Today they cost Priya 100 minutes per case to rediscover. Abstention with a named reason is the deliverable. After per-tenant curation, abstentions become the exception. Their rate is a metric we report, not hide.
+Two blockers (no series, no SOP content) are artefacts of the pack; in production the series is snapshotted at ingest and SOP limits are transcribed once per revision. With only those two gaps closed, 8 of the 420 would already be READY_FOR_QA_REVIEW. The remaining blockers are real, specific and actionable: "Rev 02 and Rev 03 overlap", "master points at the vial study". Today they cost Priya 100 minutes per case to rediscover. Abstention with a named reason is the deliverable. After per-tenant curation, abstentions become the exception. Their rate is a metric we report, not hide.
 
 **2. "Why not let the LLM read the SOP and decide?"**
 The January pilot did exactly that and cited withdrawn revisions (B§5). The evidence must be right before anyone reasons over it. An LLM may draft prose from a finished assessment, under a versioned route and replay gate. It is optional, and the system is fully functional without it.

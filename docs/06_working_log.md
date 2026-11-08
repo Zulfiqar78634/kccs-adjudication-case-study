@@ -23,6 +23,7 @@
 | 15 | Demo hygiene | `artifacts/packages` held 32 directories | — | — | Stale outputs from earlier runs: demo now clears its own subdirectories | `cli.py` |
 | 16 | Remaining honest gaps | evaluation | retrofit expectations to pass | **Rejected retrofitting.** EXC-110476 stays NOT_SURFACED; EXC-110602 SURFACED_ONLY_GENERICALLY | — | `05` |
 | 17 | Docs consistency | own numbers | — | — | Wrote "57 annexure revisions" in `04`; recount from the profile gave 102 (40+33+29). Corrected | `04` |
+| 18 | Final check against a fresh clone | clean-clone `run_all.sh` artifacts | — | — | **Stale claims:** the docs said "every event has a case-specific blocker" (true before fix 12) and "42 packages". The clean run shows 8 events with only pack-wide gaps (4 T-CAMPOS, 4 T-PINNACLE) and 6 packages. Docs corrected from the clean-run output | `05`, `07`, `FINAL_REPORT.md` |
 
 Discarded approaches, with reasons:
 - **Ranking ambiguous candidates:** it hides conflicts the reviewer must see.
