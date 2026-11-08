@@ -1,6 +1,6 @@
 # KCCS Sentinel: evidence-resolution and replay kernel (case-study submission)
 
-Candidate: **Zulfiqar**. Start with **[FINAL_REPORT.md](FINAL_REPORT.md)**.
+Candidate: **Zulfiqar**. Start with **[FINAL_REPORT.md](FINAL_REPORT.md)**. To run and check everything yourself, follow **[docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md)** (about 2 minutes, with the expected output at each step).
 
 ```
 Workbook / source systems → ingestion (row refs, hashes) → append-only bitemporal store
