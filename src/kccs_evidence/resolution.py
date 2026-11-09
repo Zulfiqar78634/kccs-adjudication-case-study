@@ -4,6 +4,7 @@ Never guesses: no fuzzy matching, no cross-tenant lookups, and unattributed
 product aliases are not consulted (see reference_facts.product_alias_policy).
 Ambiguity is returned as AMBIGUOUS with candidates, not resolved by ranking.
 """
+
 from __future__ import annotations
 
 from collections import Counter
@@ -13,8 +14,7 @@ from .access import TenantView
 from .config_loader import load_config
 from .model import BLOCKING, INFO, REVIEW, Finding, Resolution, norm
 
-PRODUCT_FIELDS = {"gtin": "IDENTIFIER", "internal_sku": "IDENTIFIER", "legacy_code": "IDENTIFIER",
-                  "brand_as_labelled": "LABEL", "generic_inn": "MOLECULE"}
+PRODUCT_FIELDS = {"gtin": "IDENTIFIER", "internal_sku": "IDENTIFIER", "legacy_code": "IDENTIFIER", "brand_as_labelled": "LABEL", "generic_inn": "MOLECULE"}
 
 
 def _mapping_hit(view: TenantView, kind: str, value: str) -> dict | None:
@@ -30,9 +30,16 @@ def resolve_product(view: TenantView, value: str | None) -> tuple[Resolution, li
     res = Resolution("PRODUCT", "product", value, "UNRESOLVED")
     if value in (None, ""):
         res.status = "MISSING_INPUT"
-        return res, [Finding("PRODUCT_REF_MISSING", BLOCKING, "identity",
-                             "Alert carries no product reference; product, specification and stability evidence cannot be selected.",
-                             (), "Identify the product from shipment/consignment documents and record it")]
+        return res, [
+            Finding(
+                "PRODUCT_REF_MISSING",
+                BLOCKING,
+                "identity",
+                "Alert carries no product reference; product, specification and stability evidence cannot be selected.",
+                (),
+                "Identify the product from shipment/consignment documents and record it",
+            )
+        ]
     rows = view.tenant_records("02_Product_Master")
     key = norm(value)
     matches = [(r, f) for r in rows for f in PRODUCT_FIELDS if key and norm(r.get(f)) == key]
@@ -47,30 +54,57 @@ def resolve_product(view: TenantView, value: str | None) -> tuple[Resolution, li
             res.status, res.resolved_id, res.basis = "RESOLVED", target.source_ref, f"APPROVED_MAPPING {m['assertion_id']}"
             res.source_refs = [target.source_ref]
             res.attributes = dict(target.payload)
-            return res, [Finding("PRODUCT_RESOLVED_BY_HUMAN_MAPPING", INFO, "identity",
-                                 f"Resolved via human-approved mapping {m['assertion_id']} by {m['actor']} at {m['recorded_at']}.",
-                                 (target.source_ref,))]
+            return res, [
+                Finding(
+                    "PRODUCT_RESOLVED_BY_HUMAN_MAPPING",
+                    INFO,
+                    "identity",
+                    f"Resolved via human-approved mapping {m['assertion_id']} by {m['actor']} at {m['recorded_at']}.",
+                    (target.source_ref,),
+                )
+            ]
         res.notes.append("No exact match in this tenant's product master. Unattributed product aliases are not consulted (policy QUARANTINE_UNATTRIBUTED).")
-        return res, [Finding("PRODUCT_UNRESOLVED", BLOCKING, "identity",
-                             f"Product reference {value!r} does not match any identifier, label or INN in this tenant's product master.",
-                             (), "Confirm product identity and record a tenant-scoped mapping for approval")]
+        return res, [
+            Finding(
+                "PRODUCT_UNRESOLVED",
+                BLOCKING,
+                "identity",
+                f"Product reference {value!r} does not match any identifier, label or INN in this tenant's product master.",
+                (),
+                "Confirm product identity and record a tenant-scoped mapping for approval",
+            )
+        ]
     res.candidates = [{"id": ref, "matched_fields": fields} for ref, fields in by_row.items()]
     if len(by_row) > 1:
         res.status = "AMBIGUOUS"
         refs = tuple(by_row)
         specs = sorted({str(r.get("storage_spec_text")) for r, _ in matches})
-        return res, [Finding("PRODUCT_AMBIGUOUS", BLOCKING, "identity",
-                             f"Reference {value!r} matches {len(by_row)} product-master rows for this tenant (storage specs: {specs}). Not resolved by ranking.",
-                             refs, "Select the correct product-master row; consider correcting the duplicate at source")]
+        return res, [
+            Finding(
+                "PRODUCT_AMBIGUOUS",
+                BLOCKING,
+                "identity",
+                f"Reference {value!r} matches {len(by_row)} product-master rows for this tenant (storage specs: {specs}). Not resolved by ranking.",
+                refs,
+                "Select the correct product-master row; consider correcting the duplicate at source",
+            )
+        ]
     ref, fields = next(iter(by_row.items()))
     row = next(r for r, _ in matches if r.source_ref == ref)
     res.resolved_id, res.source_refs, res.attributes = ref, [ref], dict(row.payload)
     kinds = {PRODUCT_FIELDS[f] for f in fields}
     if kinds == {"MOLECULE"}:
         res.status, res.basis = "RESOLVED_PROVISIONAL", "INN_MATCH"
-        findings.append(Finding("PRODUCT_MATCHED_BY_INN_ONLY", REVIEW, "identity",
-                                "Matched on the international non-proprietary name only; an INN identifies the molecule, not the presentation or strength.",
-                                (ref,), "Confirm presentation and strength from shipment documents"))
+        findings.append(
+            Finding(
+                "PRODUCT_MATCHED_BY_INN_ONLY",
+                REVIEW,
+                "identity",
+                "Matched on the international non-proprietary name only; an INN identifies the molecule, not the presentation or strength.",
+                (ref,),
+                "Confirm presentation and strength from shipment documents",
+            )
+        )
     else:
         res.status, res.basis = "RESOLVED", "EXACT_" + "+".join(sorted(fields)).upper()
     if row.get("gtin") is None:
@@ -101,9 +135,16 @@ def resolve_facility(view: TenantView, value: str | None, role: str, knowledge_d
     elif len(linked) > 1:
         res.status = "AMBIGUOUS"
         res.candidates = [{"id": s} for s in sorted(linked)]
-        findings.append(Finding(f"{role.upper()}_FACILITY_AMBIGUOUS", BLOCKING, "identity",
-                                f"{value!r} matches registry records for several sites {sorted(linked)}.", tuple(res.source_refs),
-                                "Confirm which physical site was involved"))
+        findings.append(
+            Finding(
+                f"{role.upper()}_FACILITY_AMBIGUOUS",
+                BLOCKING,
+                "identity",
+                f"{value!r} matches registry records for several sites {sorted(linked)}.",
+                tuple(res.source_refs),
+                "Confirm which physical site was involved",
+            )
+        )
     else:
         m = _mapping_hit(view, "FACILITY", value)
         if m and m["decision"] == "APPROVED":
@@ -131,38 +172,68 @@ def resolve_facility(view: TenantView, value: str | None, role: str, knowledge_d
                 res.status, res.resolved_id, res.basis = "RESOLVED_PROVISIONAL", next(iter(sites)), "UNVERIFIED_REVIEWER_ALIAS"
                 res.source_refs += refs
                 disputed = any("Disputed" in n for n in notes)
-                findings.append(Finding(f"{role.upper()}_FACILITY_PROVISIONAL", REVIEW, "identity",
-                                        f"{value!r} linked to {res.resolved_id} only by a reviewer alias observation (not authoritative)"
-                                        + ("; the alias is disputed by the TMS owner" if disputed else "") + ".",
-                                        tuple(refs), "Approve or reject the facility mapping"))
+                findings.append(
+                    Finding(
+                        f"{role.upper()}_FACILITY_PROVISIONAL",
+                        REVIEW,
+                        "identity",
+                        f"{value!r} linked to {res.resolved_id} only by a reviewer alias observation (not authoritative)"
+                        + ("; the alias is disputed by the TMS owner" if disputed else "")
+                        + ".",
+                        tuple(refs),
+                        "Approve or reject the facility mapping",
+                    )
+                )
             elif len(sites) > 1:
                 res.status = "AMBIGUOUS"
                 res.candidates = [{"id": s} for s in sorted(sites)]
-                findings.append(Finding(f"{role.upper()}_FACILITY_AMBIGUOUS", BLOCKING, "identity",
-                                        f"Alias observations link {value!r} to several sites {sorted(sites)}.", tuple(refs),
-                                        "Confirm which physical site was involved"))
+                findings.append(
+                    Finding(
+                        f"{role.upper()}_FACILITY_AMBIGUOUS",
+                        BLOCKING,
+                        "identity",
+                        f"Alias observations link {value!r} to several sites {sorted(sites)}.",
+                        tuple(refs),
+                        "Confirm which physical site was involved",
+                    )
+                )
             else:
-                findings.append(Finding(f"{role.upper()}_FACILITY_UNRESOLVED", BLOCKING if role == "origin" else REVIEW,
-                                        "identity", f"{role} reference {value!r} could not be linked to a registry site.",
-                                        tuple(res.source_refs), "Identify the site and record a mapping for approval"))
+                findings.append(
+                    Finding(
+                        f"{role.upper()}_FACILITY_UNRESOLVED",
+                        BLOCKING if role == "origin" else REVIEW,
+                        "identity",
+                        f"{role} reference {value!r} could not be linked to a registry site.",
+                        tuple(res.source_refs),
+                        "Identify the site and record a mapping for approval",
+                    )
+                )
     if res.resolved_id:
         site_rows = [r for r in registry if r.get("code_in_source") == res.resolved_id]
         tzs = sorted({r.get("timezone_in_source") for r in site_rows})
         countries = sorted({r.get("country") for r in site_rows})
         flags = {f["site"]: f for f in load_config("reference_facts.json")["facility_timezone_flags"]}
         flag = flags.get(res.resolved_id)
-        res.attributes = {"country": countries[0] if len(countries) == 1 else None, "timezones_in_source": tzs,
-                          "timezone": tzs[0] if len(tzs) == 1 else None,
-                          "timezone_trusted": len(tzs) == 1 and flag is None,
-                          "registry_records": [r.source_ref for r in site_rows],
-                          "gmp_licences_in_source": sorted({r.get("gmp_licence_ref") for r in site_rows if r.get("gmp_licence_ref")})}
+        res.attributes = {
+            "country": countries[0] if len(countries) == 1 else None,
+            "timezones_in_source": tzs,
+            "timezone": tzs[0] if len(tzs) == 1 else None,
+            "timezone_trusted": len(tzs) == 1 and flag is None,
+            "registry_records": [r.source_ref for r in site_rows],
+            "gmp_licences_in_source": sorted({r.get("gmp_licence_ref") for r in site_rows if r.get("gmp_licence_ref")}),
+        }
         if flag:
-            findings.append(Finding("FACILITY_TIMEZONE_" + flag["status"], REVIEW, "policy",
-                                    f"{res.resolved_id}: {flag['issue']}", (flag["source"],)))
+            findings.append(Finding("FACILITY_TIMEZONE_" + flag["status"], REVIEW, "policy", f"{res.resolved_id}: {flag['issue']}", (flag["source"],)))
         if len(res.attributes["gmp_licences_in_source"]) > 1:
-            findings.append(Finding("FACILITY_GMP_LICENCE_CONFLICT", INFO, "identity",
-                                    f"{res.resolved_id} carries {len(res.attributes['gmp_licences_in_source'])} different GMP licence refs across source systems.",
-                                    tuple(res.attributes["registry_records"])))
+            findings.append(
+                Finding(
+                    "FACILITY_GMP_LICENCE_CONFLICT",
+                    INFO,
+                    "identity",
+                    f"{res.resolved_id} carries {len(res.attributes['gmp_licences_in_source'])} different GMP licence refs across source systems.",
+                    tuple(res.attributes["registry_records"]),
+                )
+            )
     return res, findings
 
 
@@ -202,18 +273,50 @@ def resolve_carrier(view: TenantView, value: str | None, knowledge_date: date | 
         c = hits[0]
         res.status = "RESOLVED" if basis != "UNVERIFIED_REVIEWER_ALIAS" else "RESOLVED_PROVISIONAL"
         res.resolved_id, res.basis = c.record_key, basis
-        res.attributes = {k: c.get(k) for k in ("counterparty_legal_entity", "effective_from", "effective_to", "governing_law",
-                                                 "cold_chain_clause", "liability_cap", "claim_window_days", "amendment_docs")}
+        res.attributes = {
+            k: c.get(k)
+            for k in (
+                "counterparty_legal_entity",
+                "effective_from",
+                "effective_to",
+                "governing_law",
+                "cold_chain_clause",
+                "liability_cap",
+                "claim_window_days",
+                "amendment_docs",
+            )
+        }
         sev = REVIEW if res.status == "RESOLVED_PROVISIONAL" else INFO
-        return res, [Finding("CARRIER_RESOLVED" if sev == INFO else "CARRIER_PROVISIONAL", sev, "liability",
-                             f"Carrier {value!r} -> {c.get('counterparty_legal_entity')} ({c.record_key}) by {basis}.",
-                             tuple(res.source_refs), None if sev == INFO else "Approve carrier legal-entity mapping")]
+        return res, [
+            Finding(
+                "CARRIER_RESOLVED" if sev == INFO else "CARRIER_PROVISIONAL",
+                sev,
+                "liability",
+                f"Carrier {value!r} -> {c.get('counterparty_legal_entity')} ({c.record_key}) by {basis}.",
+                tuple(res.source_refs),
+                None if sev == INFO else "Approve carrier legal-entity mapping",
+            )
+        ]
     if len(hits) > 1:
         res.status = "AMBIGUOUS"
         res.candidates = [{"id": c.record_key, "legal_entity": c.get("counterparty_legal_entity")} for c in hits]
-        return res, [Finding("CARRIER_AMBIGUOUS", REVIEW, "liability",
-                             f"{value!r} matches several legal entities/contracts {[c.record_key for c in hits]}; subsidiaries have different claim windows.",
-                             tuple(res.source_refs), "Confirm the contracting legal entity for this leg")]
-    return res, [Finding("CARRIER_UNRESOLVED", REVIEW, "liability",
-                         f"Carrier {value!r} not found in the contract index or carrier aliases.", (),
-                         "Identify the carrier legal entity")]
+        return res, [
+            Finding(
+                "CARRIER_AMBIGUOUS",
+                REVIEW,
+                "liability",
+                f"{value!r} matches several legal entities/contracts {[c.record_key for c in hits]}; subsidiaries have different claim windows.",
+                tuple(res.source_refs),
+                "Confirm the contracting legal entity for this leg",
+            )
+        ]
+    return res, [
+        Finding(
+            "CARRIER_UNRESOLVED",
+            REVIEW,
+            "liability",
+            f"Carrier {value!r} not found in the contract index or carrier aliases.",
+            (),
+            "Identify the carrier legal entity",
+        )
+    ]

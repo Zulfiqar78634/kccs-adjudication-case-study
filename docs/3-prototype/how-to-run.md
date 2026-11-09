@@ -1,6 +1,6 @@
-# Step-by-step: run and check the submission
+# Deliverable 3: Run the prototype, step by step
 
-This guide takes you from an empty folder to every result, and shows the output to expect at each step. Commands are shown for **macOS/Linux (bash)**; where Windows PowerShell differs, the PowerShell version follows. Every bash command below was run as written on Linux with Python 3.12 and the supplied workbook; the PowerShell commands are run on Windows by the [cross-platform workflow](../.github/workflows/cross-platform.yml) using a synthetic workbook. Total time is about 2 minutes.
+This guide takes you from an empty folder to every result, and shows the output to expect at each step. Commands are shown for **macOS/Linux (bash)**; where Windows PowerShell differs, the PowerShell version follows. Every bash command below was run as written on Linux with Python 3.12 and the supplied workbook; the PowerShell commands are run on Windows by the [cross-platform workflow](../../.github/workflows/cross-platform.yml) using a synthetic workbook. Total time is about 2 minutes.
 
 You need:
 - **Python 3.11 or newer** (`python3 --version`; on Windows `py -3.12 --version` or `python --version`);
@@ -79,7 +79,7 @@ kccs-evidence demo --workbook data/KCCS_Sentinel_Reference_Data_Pack.xlsx --out-
 assessments stored: 841; outputs in artifacts
 ```
 
-*Shortcut (macOS/Linux):* `scripts/run_all.sh` performs Steps 3–5 in one go and saves the test output to `artifacts/test_output.txt`. To run every check in this guide automatically and record the evidence, use `python scripts/e2e_check.py` (any OS) instead. It writes a pass/fail table and full logs to `evidence/`; the recorded run is in [`evidence/E2E_EVIDENCE.md`](../evidence/E2E_EVIDENCE.md).
+*Shortcut (macOS/Linux):* `scripts/run_all.sh` performs Steps 3–5 in one go and saves the test output to `artifacts/test_output.txt`. To run every check in this guide automatically and record the evidence, use `python scripts/e2e_check.py` (any OS) instead. It writes a pass/fail table and full logs to `evidence/`; the recorded run is in [`evidence/E2E_EVIDENCE.md`](../../evidence/E2E_EVIDENCE.md).
 
 ## Step 6: Look at the brief's own case (EXC-107133)
 
@@ -117,8 +117,8 @@ kccs-evidence assess --db artifacts/my.sqlite --tenant T-KAVERI --event EXC-1071
 
 **Expect:**
 ```
-ASM-42fed7e003e39830f09bf75e status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
-ASM-fffe3ad0b3aaab419e16e577 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-7d055f3185a57e741da03b4c status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-b6b6a6273cdec172859deb86 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
 ```
 
 The first ID is identical on every machine, Python version and run. The ID is a fingerprint of the evidence, the knowledge cutoff and the exact code and rule versions, so the same inputs always give the same ID. Any change to the code or rules gives a different ID by design.
@@ -140,22 +140,22 @@ echo "exit code: $LASTEXITCODE"
 ## Step 9: Export an evidence package and prove it cannot be altered
 
 ```bash
-kccs-evidence export-package --db artifacts/my.sqlite --assessment-id ASM-42fed7e003e39830f09bf75e \
+kccs-evidence export-package --db artifacts/my.sqlite --assessment-id ASM-7d055f3185a57e741da03b4c \
     --tenant-scope T-KAVERI --out-dir artifacts/my_packages
-kccs-evidence verify-package artifacts/my_packages/ASM-42fed7e003e39830f09bf75e
+kccs-evidence verify-package artifacts/my_packages/ASM-7d055f3185a57e741da03b4c
 ```
 
 In PowerShell, put the first command on one line (drop the `\`). **Expect:** `"ok": true`. Now change the package and verify again:
 
 ```bash
-sed -i 's/ABSTAIN_BLOCKING_EVIDENCE_GAPS/READY_FOR_QA_REVIEW/' artifacts/my_packages/ASM-42fed7e003e39830f09bf75e/assessment.json
-kccs-evidence verify-package artifacts/my_packages/ASM-42fed7e003e39830f09bf75e
+sed -i 's/ABSTAIN_BLOCKING_EVIDENCE_GAPS/READY_FOR_QA_REVIEW/' artifacts/my_packages/ASM-7d055f3185a57e741da03b4c/assessment.json
+kccs-evidence verify-package artifacts/my_packages/ASM-7d055f3185a57e741da03b4c
 ```
 
 ```powershell
-$f = "artifacts\my_packages\ASM-42fed7e003e39830f09bf75e\assessment.json"
+$f = "artifacts\my_packages\ASM-7d055f3185a57e741da03b4c\assessment.json"
 [IO.File]::WriteAllText($f, [IO.File]::ReadAllText($f).Replace("ABSTAIN_BLOCKING_EVIDENCE_GAPS", "READY_FOR_QA_REVIEW"))
-kccs-evidence verify-package artifacts\my_packages\ASM-42fed7e003e39830f09bf75e
+kccs-evidence verify-package artifacts\my_packages\ASM-7d055f3185a57e741da03b4c
 ```
 
 **Expect:** `"ok": false` and `"problems": ["hash mismatch assessment.json"]`, with exit code 2. (On macOS, use `sed -i ''`.)
@@ -174,13 +174,13 @@ These figures come from a stratified evidence pack, not a random sample. They ar
 
 | Order | File | Deliverable |
 |---|---|---|
-| 1 | `FINAL_REPORT.md` | Overview |
-| 2 | `docs/01_where_we_land.md` | Where I land: requirements, non-goals, rollout, contradictions, board targets |
-| 3 | `docs/02_architecture_hld.md`, `docs/03_detailed_design_lld.md` | The design |
-| 4 | `docs/04_data_findings_and_assumptions.md` | Data findings |
-| 5 | `docs/05_validation_and_operations.md` | How correctness is checked today and monitored later |
-| 6 | `docs/06_working_log.md` | Working log |
-| 7 | `docs/07_review_walkthrough.md` | 20-minute walkthrough and hard questions |
+| 1 | [FINAL_REPORT.md](../../FINAL_REPORT.md) | Overview |
+| 2 | [where-we-land.md](../1-where-you-land/where-we-land.md) | Where I land: requirements, non-goals, rollout, contradictions, board targets |
+| 3 | [architecture.md](../2-design/architecture.md), [detailed-design.md](../2-design/detailed-design.md) | The design |
+| 4 | [data-findings-and-assumptions.md](../1-where-you-land/data-findings-and-assumptions.md) | Data findings |
+| 5 | [validation.md](validation.md) | How correctness is checked today and monitored later |
+| 6 | [working-log.md](../4-working-log/working-log.md) | Working log |
+| 7 | [review-walkthrough.md](../review-walkthrough.md) | 20-minute walkthrough and hard questions |
 
 ---
 

@@ -8,6 +8,7 @@
 * Unreadable/partial studies are never relied on, even where the index row has
   permitted_excursion_text populated.
 """
+
 from __future__ import annotations
 
 import re
@@ -90,19 +91,25 @@ def assess_study(study, product: dict[str, Any], tenant: str) -> dict[str, Any]:
         notes.append(f"file path folder '{folder[2]}' differs from owner {tenant}; ownership taken from tenant_code")
     elif len(folder) > 2 and folder[2] == "Shared":
         notes.append("filed under a shared folder; ownership taken from tenant_code")
-    return {"ref": study.source_ref, "study_ref": study.record_key, "product_text": study.get("product_text_as_written"),
-            "study_type": study.get("study_type"), "readable": study.get("readable"),
-            "permitted_excursion_text": study.get("permitted_excursion_text") if not readable.startswith("N") else None,
-            "admissible": not reasons, "presentation_verified": presentation_verified,
-            "rejection_reasons": reasons, "notes": notes}
+    return {
+        "ref": study.source_ref,
+        "study_ref": study.record_key,
+        "product_text": study.get("product_text_as_written"),
+        "study_type": study.get("study_type"),
+        "readable": study.get("readable"),
+        "permitted_excursion_text": study.get("permitted_excursion_text") if not readable.startswith("N") else None,
+        "admissible": not reasons,
+        "presentation_verified": presentation_verified,
+        "rejection_reasons": reasons,
+        "notes": notes,
+    }
 
 
 def assess_stability(view: TenantView, product: Resolution, ev: dict[str, Any], spec, fw) -> tuple[dict[str, Any], list[Finding]]:
     out: dict[str, Any] = {"status": "NOT_EVALUATED", "referenced": None, "unreferenced_candidates": [], "limit_checks": []}
     if not product.usable:
         out["status"] = "BLOCKED_PRODUCT_UNRESOLVED"
-        return out, [Finding("STABILITY_NOT_SELECTABLE", BLOCKING, "stability",
-                             "Stability evidence cannot be selected without a resolved product.", ())]
+        return out, [Finding("STABILITY_NOT_SELECTABLE", BLOCKING, "stability", "Stability evidence cannot be selected without a resolved product.", ())]
     p = product.attributes
     findings: list[Finding] = []
     own = {s.record_key: s for s in view.tenant_records("06_Stability_Index")}
@@ -110,22 +117,43 @@ def assess_stability(view: TenantView, product: Resolution, ev: dict[str, Any], 
     master_limit = parse_limit(p.get("permitted_excursion_text"))
     out["product_master_permitted_excursion"] = master_limit
     if not ref:
-        findings.append(Finding("STABILITY_REF_MISSING", BLOCKING, "stability",
-                                "Product master carries no stability_study_ref.", (product.resolved_id,),
-                                "Locate the governing stability study"))
+        findings.append(
+            Finding(
+                "STABILITY_REF_MISSING",
+                BLOCKING,
+                "stability",
+                "Product master carries no stability_study_ref.",
+                (product.resolved_id,),
+                "Locate the governing stability study",
+            )
+        )
     elif ref not in own:
         # Do not look the reference up under other tenants; that would itself be cross-tenant access.
         out["referenced"] = {"study_ref": ref, "in_tenant_index": False}
-        findings.append(Finding("STABILITY_REF_NOT_IN_TENANT_INDEX", BLOCKING, "stability",
-                                f"{ref} is not in this tenant's stability index. The index covers ~60% of the repository, so absence is not evidence the study does not exist.",
-                                (product.resolved_id, "00_README!R35"), "Retrieve the study from the repository and index it"))
+        findings.append(
+            Finding(
+                "STABILITY_REF_NOT_IN_TENANT_INDEX",
+                BLOCKING,
+                "stability",
+                f"{ref} is not in this tenant's stability index. The index covers ~60% of the repository, so absence is not evidence the study does not exist.",
+                (product.resolved_id, "00_README!R35"),
+                "Retrieve the study from the repository and index it",
+            )
+        )
     else:
         a = assess_study(own[ref], p, view.tenant)
         out["referenced"] = a
         if not a["admissible"]:
-            findings.append(Finding("STABILITY_REFERENCED_STUDY_INADMISSIBLE", BLOCKING, "stability",
-                                    f"Product master references {ref}, which cannot be relied on: {'; '.join(a['rejection_reasons'])}.",
-                                    (product.resolved_id, a["ref"]), "Identify the study for this presentation"))
+            findings.append(
+                Finding(
+                    "STABILITY_REFERENCED_STUDY_INADMISSIBLE",
+                    BLOCKING,
+                    "stability",
+                    f"Product master references {ref}, which cannot be relied on: {'; '.join(a['rejection_reasons'])}.",
+                    (product.resolved_id, a["ref"]),
+                    "Identify the study for this presentation",
+                )
+            )
         for n in a["notes"]:
             findings.append(Finding("STABILITY_PATH_OR_INDEX_NOTE", INFO, "stability", f"{ref}: {n}", (a["ref"],)))
     keys = _name_keys(p)
@@ -141,35 +169,78 @@ def assess_stability(view: TenantView, product: Resolution, ev: dict[str, Any], 
     elif admissible_cands:
         out["status"] = "CANDIDATE_ONLY"
         basis = admissible_cands[0] if len(admissible_cands) == 1 else None
-        findings.append(Finding("STABILITY_UNREFERENCED_CANDIDATE", REVIEW, "stability",
-                                f"{len(admissible_cands)} admissible study(ies) for this product/presentation exist in the tenant index but are not referenced by the product master: {[c['study_ref'] for c in admissible_cands]}.",
-                                tuple(c["ref"] for c in admissible_cands), "QA to confirm the study and correct the product-master reference"))
+        findings.append(
+            Finding(
+                "STABILITY_UNREFERENCED_CANDIDATE",
+                REVIEW,
+                "stability",
+                f"{len(admissible_cands)} admissible study(ies) for this product/presentation exist in the tenant index but are not referenced by the product master: {[c['study_ref'] for c in admissible_cands]}.",
+                tuple(c["ref"] for c in admissible_cands),
+                "QA to confirm the study and correct the product-master reference",
+            )
+        )
     else:
         out["status"] = "NO_ADMISSIBLE_STUDY"
-        findings.append(Finding("STABILITY_NO_ADMISSIBLE_STUDY", BLOCKING, "stability",
-                                "No admissible stability study found in the tenant index for this product and presentation.",
-                                (product.resolved_id,), "Retrieve or commission stability evidence"))
+        findings.append(
+            Finding(
+                "STABILITY_NO_ADMISSIBLE_STUDY",
+                BLOCKING,
+                "stability",
+                "No admissible stability study found in the tenant index for this product and presentation.",
+                (product.resolved_id,),
+                "Retrieve or commission stability evidence",
+            )
+        )
     if basis:
         if not basis.get("presentation_verified"):
-            findings.append(Finding("STABILITY_PRESENTATION_UNVERIFIED", REVIEW, "stability",
-                                    f"{basis['study_ref']}: presentation is not stated on both the product label and the study, so the match is unverified.",
-                                    (product.resolved_id, basis["ref"]), "Confirm the study covers this presentation"))
+            findings.append(
+                Finding(
+                    "STABILITY_PRESENTATION_UNVERIFIED",
+                    REVIEW,
+                    "stability",
+                    f"{basis['study_ref']}: presentation is not stated on both the product label and the study, so the match is unverified.",
+                    (product.resolved_id, basis["ref"]),
+                    "Confirm the study covers this presentation",
+                )
+            )
         study_limit = parse_limit(basis["permitted_excursion_text"])
         out["limit_checks"].append({"source": basis["study_ref"], **evaluate_limit(study_limit, ev, spec, fw)})
         if master_limit["kind"] not in ("ABSENT", "REFER_QA") and master_limit.get("text") and norm(master_limit["text"]) != norm(study_limit.get("text")):
             same_kind = master_limit["kind"] == study_limit["kind"] and all(
-                master_limit.get(k) == study_limit.get(k) for k in ("hours", "ceiling_c", "threshold_c"))
+                master_limit.get(k) == study_limit.get(k) for k in ("hours", "ceiling_c", "threshold_c")
+            )
             if not same_kind:
-                findings.append(Finding("STABILITY_MASTER_VS_STUDY_CONFLICT", BLOCKING, "stability",
-                                        f"Product master permitted excursion {master_limit['text']!r} disagrees with {basis['study_ref']} {study_limit.get('text')!r}.",
-                                        (product.resolved_id, basis["ref"]), "QA to decide which governs and correct the other"))
+                findings.append(
+                    Finding(
+                        "STABILITY_MASTER_VS_STUDY_CONFLICT",
+                        BLOCKING,
+                        "stability",
+                        f"Product master permitted excursion {master_limit['text']!r} disagrees with {basis['study_ref']} {study_limit.get('text')!r}.",
+                        (product.resolved_id, basis["ref"]),
+                        "QA to decide which governs and correct the other",
+                    )
+                )
     if master_limit["kind"] == "REFER_QA":
-        findings.append(Finding("PRODUCT_MASTER_ALLOWANCE_IS_REFER_QA", REVIEW, "stability",
-                                "Product master permitted excursion says 'Refer QA'; that is not an allowance (cf. EXC-110574).", (product.resolved_id,)))
+        findings.append(
+            Finding(
+                "PRODUCT_MASTER_ALLOWANCE_IS_REFER_QA",
+                REVIEW,
+                "stability",
+                "Product master permitted excursion says 'Refer QA'; that is not an allowance (cf. EXC-110574).",
+                (product.resolved_id,),
+            )
+        )
     out["limit_checks"].append({"source": "product_master", **evaluate_limit(master_limit, ev, spec, fw)})
     for chk in out["limit_checks"]:
         if chk["status"] == "INDETERMINATE_FIRMWARE_UNCERTAINTY":
-            findings.append(Finding("LIMIT_CHECK_FLIPS_WITHIN_FIRMWARE_BAND", BLOCKING, "firmware",
-                                    f"Against {chk['source']}, the conclusion changes within the firmware under-reporting band {chk['firmware_band_c']}.",
-                                    (), "Treat temperature as uncertain; consider lab test or alternative logger evidence"))
+            findings.append(
+                Finding(
+                    "LIMIT_CHECK_FLIPS_WITHIN_FIRMWARE_BAND",
+                    BLOCKING,
+                    "firmware",
+                    f"Against {chk['source']}, the conclusion changes within the firmware under-reporting band {chk['firmware_band_c']}.",
+                    (),
+                    "Treat temperature as uncertain; consider lab test or alternative logger evidence",
+                )
+            )
     return out, findings

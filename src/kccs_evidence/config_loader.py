@@ -1,8 +1,9 @@
 """Configuration loading with content hashes for the execution manifest."""
+
 from __future__ import annotations
 
 import json
-from functools import lru_cache
+from functools import cache
 from importlib import resources
 from typing import Any
 
@@ -11,7 +12,7 @@ from .sources import canonical_json, sha256_text
 CONFIG_FILES = ("sop_scope_rules.json", "reference_facts.json")
 
 
-@lru_cache(maxsize=None)
+@cache
 def load_config(name: str) -> dict[str, Any]:
     text = resources.files("kccs_evidence.config").joinpath(name).read_text(encoding="utf-8")
     return json.loads(text)

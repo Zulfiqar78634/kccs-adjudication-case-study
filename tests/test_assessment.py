@@ -1,14 +1,15 @@
 """Assessment-level behaviour: idempotency, leakage control, corrections, safe failure, human mappings."""
+
 import ast
 import json
 from pathlib import Path
 
-from conftest import BASELINE, clock, principal, synthetic_record, synthetic_store
+from conftest import clock, principal, synthetic_record, synthetic_store
+
 from kccs_evidence.assessment import OUTCOME_FIELDS, assess_and_store, build_assessment
 
 SRC = Path(__file__).resolve().parents[1] / "src" / "kccs_evidence"
-ALLOWED_STATUSES = {"ABSTAIN_BLOCKING_EVIDENCE_GAPS", "READY_FOR_QA_REVIEW", "QUARANTINED_FOR_ATTRIBUTION",
-                    "ABSTAIN_KNOWLEDGE_HISTORY_UNAVAILABLE"}
+ALLOWED_STATUSES = {"ABSTAIN_BLOCKING_EVIDENCE_GAPS", "READY_FOR_QA_REVIEW", "QUARANTINED_FOR_ATTRIBUTION", "ABSTAIN_KNOWLEDGE_HISTORY_UNAVAILABLE"}
 
 
 def test_repeated_execution_is_idempotent(store):
@@ -21,6 +22,7 @@ def test_repeated_execution_is_idempotent(store):
 def test_assessment_id_independent_of_requesting_actor(store):
     a = build_assessment(store, principal("T-KAVERI"), "T-KAVERI", "EXC-107133", clock=clock)
     from kccs_evidence.access import Principal
+
     b = build_assessment(store, Principal("someone-else", frozenset({"T-KAVERI", "T-AURA"})), "T-KAVERI", "EXC-107133", clock=clock)
     assert a["assessment_id"] == b["assessment_id"]
 
@@ -28,10 +30,22 @@ def test_assessment_id_independent_of_requesting_actor(store):
 def test_outcome_fields_are_not_inputs(store):
     """Rewrite every outcome field of the current event; the assessment must not change."""
     before = build_assessment(store, principal("T-KAVERI"), "T-KAVERI", "EXC-107133", knowledge_cutoff="now", clock=clock)
-    store.apply_correction("01_Excursion_Events", "EXC-107133",
-                           {"final_disposition": "DESTROY", "triage_outcome": "NON_ACTIONABLE — sensor artefact",
-                            "rules_engine_recommendation": "AUTO_CLOSE", "reviewer_overrode": "Y", "reopened_later": "Y",
-                            "regulator_reportable": "Y", "notes": "test"}, "2026-10-01T00:00:00Z", "test", "outcome-leak probe")
+    store.apply_correction(
+        "01_Excursion_Events",
+        "EXC-107133",
+        {
+            "final_disposition": "DESTROY",
+            "triage_outcome": "NON_ACTIONABLE — sensor artefact",
+            "rules_engine_recommendation": "AUTO_CLOSE",
+            "reviewer_overrode": "Y",
+            "reopened_later": "Y",
+            "regulator_reportable": "Y",
+            "notes": "test",
+        },
+        "2026-10-01T00:00:00Z",
+        "test",
+        "outcome-leak probe",
+    )
     after = build_assessment(store, principal("T-KAVERI"), "T-KAVERI", "EXC-107133", knowledge_cutoff="now", clock=clock)
     assert before["assessment_id"] == after["assessment_id"]
     assert set(after["event"]["excluded_outcome_fields"]) == set(OUTCOME_FIELDS)
@@ -41,9 +55,21 @@ def test_outcome_fields_are_not_inputs(store):
 def test_evidence_logic_modules_never_mention_outcome_fields():
     """Evidence logic must not reference outcome columns. Reporting layers (evaluation, inspection, cli summary) may;
     assessment.py holds the OUTCOME_FIELDS exclusion list and the knowledge-gated precedent view of earlier cases."""
-    kernel = {"access.py", "resolution.py", "policy_sop.py", "stability.py", "signals.py", "obligations.py", "store.py",
-              "sources.py", "temporal.py", "model.py", "package.py", "config_loader.py"}
-    outcome = set(OUTCOME_FIELDS) - {"notes"}          # 'notes' is also a generic dict key used by result objects
+    kernel = {
+        "access.py",
+        "resolution.py",
+        "policy_sop.py",
+        "stability.py",
+        "signals.py",
+        "obligations.py",
+        "store.py",
+        "sources.py",
+        "temporal.py",
+        "model.py",
+        "package.py",
+        "config_loader.py",
+    }
+    outcome = set(OUTCOME_FIELDS) - {"notes"}  # 'notes' is also a generic dict key used by result objects
     offenders = {}
     for py in SRC.glob("*.py"):
         tree = ast.parse(py.read_text(encoding="utf-8"))
@@ -59,19 +85,19 @@ def test_correction_produces_new_assessment_and_old_is_immutable(store):
     orig, _ = assess_and_store(store, principal("T-KAVERI"), "T-KAVERI", "EXC-107133", clock=clock)
     row_before = dict(store.get_assessment_row(orig["assessment_id"]))
     pm = next(r for r in store.records("02_Product_Master", tenant="T-KAVERI") if r.get("stability_study_ref") == "STB-3584")
-    store.apply_correction("02_Product_Master", pm.record_key, {"stability_study_ref": "STB-2738"},
-                           "2026-09-20T10:00:00Z", "SIMULATED-QA", "SIMULATED correction (test)")
+    store.apply_correction(
+        "02_Product_Master", pm.record_key, {"stability_study_ref": "STB-2738"}, "2026-09-20T10:00:00Z", "SIMULATED-QA", "SIMULATED correction (test)"
+    )
     new, inserted = assess_and_store(store, principal("T-KAVERI"), "T-KAVERI", "EXC-107133", knowledge_cutoff="2026-09-21T00:00:00Z", clock=clock)
     assert inserted and new["assessment_id"] != orig["assessment_id"] and new["supersedes"] == orig["assessment_id"]
     assert "STABILITY_REFERENCED_STUDY_INADMISSIBLE" in new["change_from_superseded"]["removed_findings"]
     assert dict(store.get_assessment_row(orig["assessment_id"])) == row_before
     replay = build_assessment(store, principal("T-KAVERI"), "T-KAVERI", "EXC-107133", knowledge_cutoff="alert", clock=clock)
-    assert replay["assessment_id"] == orig["assessment_id"]          # what we concluded then is reproducible
+    assert replay["assessment_id"] == orig["assessment_id"]  # what we concluded then is reproducible
 
 
 def test_bulletin_reassessment_recommends_reopen_without_editing_original(store, snapshot):
-    ev = next(r for r in snapshot.records if r.sheet == "01_Excursion_Events" and r.get("logger_fw") == "TT-2.14.3"
-              and r.get("alert_ts_utc") < "2026-04-01")
+    ev = next(r for r in snapshot.records if r.sheet == "01_Excursion_Events" and r.get("logger_fw") == "TT-2.14.3" and r.get("alert_ts_utc") < "2026-04-01")
     then, _ = assess_and_store(store, principal(ev.tenant_code), ev.tenant_code, ev.record_key, clock=clock)
     later, _ = assess_and_store(store, principal(ev.tenant_code), ev.tenant_code, ev.record_key, knowledge_cutoff="2026-09-14T23:59:00Z", clock=clock)
     assert later["change_from_superseded"]["reopen_review_recommended"] is True
@@ -100,8 +126,9 @@ def test_never_a_disposition_across_all_events(store, snapshot):
 
 
 def test_conflicting_tenant_attribution_is_quarantined(store):
-    store.apply_correction("01_Excursion_Events", "EXC-107133", {"shipment_ref": "SHP-MER-000001"},
-                           "2026-10-01T00:00:00Z", "test", "SIMULATED conflicting attribution")
+    store.apply_correction(
+        "01_Excursion_Events", "EXC-107133", {"shipment_ref": "SHP-MER-000001"}, "2026-10-01T00:00:00Z", "test", "SIMULATED conflicting attribution"
+    )
     a = build_assessment(store, principal("T-KAVERI"), "T-KAVERI", "EXC-107133", knowledge_cutoff="now", clock=clock)
     assert a["disposition_evidence_status"] == "QUARANTINED_FOR_ATTRIBUTION"
 
@@ -113,24 +140,51 @@ def test_untrusted_alias_then_human_approved_mapping(store, snapshot):
     assert a["entities"]["origin"]["status"] == "RESOLVED_PROVISIONAL"
     assert a["entities"]["origin"]["basis"] == "UNVERIFIED_REVIEWER_ALIAS"
     assert any(f["code"] == "ORIGIN_FACILITY_PROVISIONAL" and f["severity"] == "REVIEW" for f in a["findings"])
-    store.add_mapping(assertion_id="MAP-0001", tenant=None, kind="FACILITY", source_string="F00231", canonical_id="BLR-CS-02",
-                      decision="APPROVED", actor="qa-lead", recorded_at="2026-09-20T00:00:00Z", evidence_ref="07_Alias_Observations!R5")
+    store.add_mapping(
+        assertion_id="MAP-0001",
+        tenant=None,
+        kind="FACILITY",
+        source_string="F00231",
+        canonical_id="BLR-CS-02",
+        decision="APPROVED",
+        actor="qa-lead",
+        recorded_at="2026-09-20T00:00:00Z",
+        evidence_ref="07_Alias_Observations!R5",
+    )
     b = build_assessment(store, principal(ev.tenant_code), ev.tenant_code, ev.record_key, knowledge_cutoff="2026-09-21T00:00:00Z", clock=clock)
     assert b["entities"]["origin"]["status"] == "RESOLVED" and b["entities"]["origin"]["basis"] == "APPROVED_MAPPING MAP-0001"
     c = build_assessment(store, principal(ev.tenant_code), ev.tenant_code, ev.record_key, knowledge_cutoff=cutoff, clock=clock)
-    assert c["entities"]["origin"]["basis"] == "UNVERIFIED_REVIEWER_ALIAS"   # mapping not visible before its recorded_at
+    assert c["entities"]["origin"]["basis"] == "UNVERIFIED_REVIEWER_ALIAS"  # mapping not visible before its recorded_at
 
 
 def test_product_ambiguity_synthetic():
     """SYNTHETIC: the workbook has no tenant with two product rows sharing an identifier; build one."""
+
     def pm(row, spec):
-        return synthetic_record("02_Product_Master", f"R{row}", row, "T-SYN", "TENANT",
-                                {"tenant_code": "T-SYN", "brand_as_labelled": "Amberil 25mg tabs", "internal_sku": "SKU-ORL-7781",
-                                 "gtin": None, "legacy_code": None, "generic_inn": None, "storage_spec_text": spec,
-                                 "permitted_excursion_text": None, "stability_study_ref": None, "last_updated": "2025-01-01"})
+        return synthetic_record(
+            "02_Product_Master",
+            f"R{row}",
+            row,
+            "T-SYN",
+            "TENANT",
+            {
+                "tenant_code": "T-SYN",
+                "brand_as_labelled": "Amberil 25mg tabs",
+                "internal_sku": "SKU-ORL-7781",
+                "gtin": None,
+                "legacy_code": None,
+                "generic_inn": None,
+                "storage_spec_text": spec,
+                "permitted_excursion_text": None,
+                "stability_study_ref": None,
+                "last_updated": "2025-01-01",
+            },
+        )
+
     st = synthetic_store([pm(2, "CRT 15-25C"), pm(3, "2-8 °C")])
     from kccs_evidence.access import TenantView
     from kccs_evidence.resolution import resolve_product
+
     res, findings = resolve_product(TenantView(st, principal("T-SYN"), "T-SYN", clock=clock), "SKU-ORL-7781")
     assert res.status == "AMBIGUOUS" and len(res.candidates) == 2 and res.resolved_id is None
     assert findings[0].code == "PRODUCT_AMBIGUOUS" and findings[0].severity == "BLOCKING"

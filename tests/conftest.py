@@ -4,6 +4,7 @@ Most tests run against the real workbook (place it at data/KCCS_Sentinel_Referen
 or set KCCS_WORKBOOK). Tests that need a situation the workbook does not contain use small,
 clearly labelled SYNTHETIC records built in this file; they never replace the workbook.
 """
+
 from __future__ import annotations
 
 import os

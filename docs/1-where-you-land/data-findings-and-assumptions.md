@@ -1,4 +1,4 @@
-# 04 — Data findings, contradictions and assumptions
+# Deliverable 1 (supporting): Data findings, contradictions and assumptions
 
 The full machine-generated report is `artifacts/data_quality/report.md` (+ `report.json`), produced by `kccs-evidence inspect`. This page summarises what matters for the design. All counts were computed by code from the workbook (sha256 prefix `9fe3fad7d0f77a5f`, extract 2026-09-14).
 
@@ -84,7 +84,7 @@ There are 28 rows: T-AURA 72 h (5 late), T-NORDIA 72 h (3 late), T-PINNACLE 24 h
 - Aggregates are not a series. "Up to 1.8 °C" is an interval, not an offset.
 - Absent study ≠ no study. Outcome fields are excluded from kernel inputs.
 
-## 10. Assumptions register (beyond `01` §5)
+## 10. Assumptions register (beyond [where we land](where-we-land.md) §5)
 
 | # | Assumption | Basis | If wrong |
 |---|---|---|---|

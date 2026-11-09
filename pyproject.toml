@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest==8.3.5"]
+dev = ["pytest==8.3.5", "ruff==0.17.4"]
 
 [project.scripts]
 kccs-evidence = "kccs_evidence.cli:main"
@@ -27,3 +27,13 @@ kccs_evidence = ["config/*.json"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.ruff]
+line-length = 160
+target-version = "py311"
+
+[tool.ruff.lint]
+# pyflakes, pycodestyle, import order, modern syntax, likely bugs, simplifications
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+# `ruff format` enforces line length; the lines it leaves long are single message strings.
+ignore = ["E501"]
