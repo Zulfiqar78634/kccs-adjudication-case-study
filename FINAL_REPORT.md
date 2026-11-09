@@ -166,10 +166,10 @@ python3 scripts/e2e_check.py   # Windows: py -3.12 scripts\e2e_check.py   -> exp
 ```
 
 Then read, in order:
-1. `docs/01_where_we_land.md`
+1. `docs/1-where-you-land/where-we-land.md`
 2. `evidence/results/EXC-107133_assessment_excerpt.json` (or `artifacts/e2e/cases/EXC-107133_at_alert.json` after a run)
 3. `evidence/results/evaluation_summary.md`
 4. `docs/02`–`05`
-5. `docs/06_working_log.md`
+5. `docs/4-working-log/working-log.md`
 
-`docs/STEP_BY_STEP.md` runs each command on its own, with the expected output. `docs/07_review_walkthrough.md` is a 20-minute walkthrough, with five hard questions and a rehearsed change response.
+`docs/3-prototype/how-to-run.md` runs each command on its own, with the expected output. `docs/review-walkthrough.md` is a 20-minute walkthrough, with five hard questions and a rehearsed change response.

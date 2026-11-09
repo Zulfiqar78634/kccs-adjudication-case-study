@@ -18,12 +18,12 @@ Open **[FINAL_REPORT.md](FINAL_REPORT.md)**. It covers what I concluded, what I 
 
 | You asked for | Where it is |
 |---|---|
-| **1. Where you land**: requirements, what I won't build, rollout and first customer, gaps and contradictions, board targets I challenge | [docs/01_where_we_land.md](docs/01_where_we_land.md) |
-| **2. The design**: architecture, components, data model and "as at a date" queries, case lifecycle, outages and the regulatory clock, versioning and deployment, diagrams | [docs/02_architecture_hld.md](docs/02_architecture_hld.md) (overview) and [docs/03_detailed_design_lld.md](docs/03_detailed_design_lld.md) (detail) |
-| **3. Working prototype**: the most critical component, run on the real workbook, and how it is validated | Code in [src/kccs_evidence/](src/kccs_evidence/), tests in [tests/](tests/), validation in [docs/05_validation_and_operations.md](docs/05_validation_and_operations.md) |
-| **4. Working log**: discarded ideas, wrong assumptions and how they were caught, changes of direction | [docs/06_working_log.md](docs/06_working_log.md) |
+| **1. Where you land**: requirements, what I won't build, rollout and first customer, gaps and contradictions, board targets I challenge | [docs/1-where-you-land/where-we-land.md](docs/1-where-you-land/where-we-land.md) |
+| **2. The design**: architecture, components, data model and "as at a date" queries, case lifecycle, outages and the regulatory clock, versioning and deployment, diagrams | [docs/2-design/architecture.md](docs/2-design/architecture.md) (overview) and [docs/2-design/detailed-design.md](docs/2-design/detailed-design.md) (detail) |
+| **3. Working prototype**: the most critical component, run on the real workbook, and how it is validated | Code in [src/kccs_evidence/](src/kccs_evidence/), tests in [tests/](tests/), validation in [docs/3-prototype/validation.md](docs/3-prototype/validation.md) |
+| **4. Working log**: discarded ideas, wrong assumptions and how they were caught, changes of direction | [docs/4-working-log/working-log.md](docs/4-working-log/working-log.md) |
 
-Also useful: what the data revealed, in [docs/04_data_findings_and_assumptions.md](docs/04_data_findings_and_assumptions.md), and a 20-minute walkthrough with hard questions, in [docs/07_review_walkthrough.md](docs/07_review_walkthrough.md).
+Also useful: what the data revealed, in [docs/1-where-you-land/data-findings-and-assumptions.md](docs/1-where-you-land/data-findings-and-assumptions.md), and a 20-minute walkthrough with hard questions, in [docs/review-walkthrough.md](docs/review-walkthrough.md).
 
 ### Step 3: See the proof that it works, without running anything
 
@@ -69,7 +69,7 @@ It creates its own Python environment, installs everything, runs all the checks,
 - **No workbook to hand?** `scripts/e2e_check.py --synthetic` runs the same install and command-line checks on an invented workbook with the same layout.
 - **Tested on:** Windows, macOS and Linux with Python 3.11, 3.12 and 3.13, on every commit ([cross-platform workflow](.github/workflows/cross-platform.yml)). Those machines use the synthetic workbook, because the confidential one is never uploaded. The full run on the real workbook is recorded in [evidence/](evidence/E2E_EVIDENCE.md).
 
-For each command on its own, with the output to expect at every step, see **[docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md)**.
+For each command on its own, with the output to expect at every step, see **[docs/3-prototype/how-to-run.md](docs/3-prototype/how-to-run.md)**.
 
 ### Step 6: Read the code (optional)
 
@@ -146,7 +146,7 @@ Each file does one job:
 README.md                     this page: start here
 FINAL_REPORT.md               summary of the whole submission
 docs/01 … 07                  the written deliverables (see Step 2)
-docs/STEP_BY_STEP.md          run every command, with the expected output
+docs/3-prototype/how-to-run.md          run every command, with the expected output
 evidence/                     recorded end-to-end test run (25/25 passed) and its logs
 src/kccs_evidence/            the prototype (see Step 6)
 tests/                        78 automated tests (45 need the real workbook; 33 run anywhere)

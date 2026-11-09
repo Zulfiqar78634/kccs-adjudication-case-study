@@ -4,14 +4,14 @@
 
 | Min | Show | File / command |
 |---|---|---|
-| 0–3 | The problem is evidence, not prediction; the four separate concepts | `01` §1 |
+| 0–3 | The problem is evidence, not prediction; the four separate concepts | [where we land](1-where-you-land/where-we-land.md) §1 |
 | 3–6 | EXC-107133 end to end: GTIN → Kaveri row R57 → overlap Rev 02/03 → STB-3584 rejected (vial, accelerated, partial) → STB-2738 candidate → master-vs-study conflict → abstain with human actions | `artifacts/cases/EXC-107133_at_alert.json` |
 | 6–9 | Time: at-alert vs at-extract for a TT-2.14.3 alert; the bulletin appears only in the later view; the original assessment is unchanged; simulated correction → new ID, supersedes link, at-alert replay reproduces the old ID | `artifacts/demo_run.json` → `correction_demo` |
 | 9–11 | Tenant isolation: same GTIN in 4 tenants; STB-4764/STB-6586 path trap; denial audited; product aliases quarantined (Cl.22) | `tests/test_tenant_isolation.py` |
 | 11–13 | Notification clock: separate state machine; waits don't move it; next business day refuses to guess; storm keeps 1,912 obligations | `tests/test_obligations.py` |
 | 13–16 | Workbook summary and override evaluation, including what we miss (EXC-110476, EXC-110602) | `artifacts/evaluation/summary.md` |
-| 16–18 | Architecture, cells, first customer Kaveri, gates and rollback | `02`, `01` §6 |
-| 18–20 | Board targets: denominators, tail latency, "no late notifications" as a measured commitment | `01` §7 |
+| 16–18 | Architecture, cells, first customer Kaveri, gates and rollback | [architecture](2-design/architecture.md), [where we land](1-where-you-land/where-we-land.md) §6 |
+| 18–20 | Board targets: denominators, tail latency, "no late notifications" as a measured commitment | [where we land](1-where-you-land/where-we-land.md) §7 |
 
 ## Five hard questions
 
@@ -37,4 +37,4 @@ The `TenantView` is required for every read, with SQL filtering by tenant. Cache
 1. **Regime:** add `tenant_policy_version` for T-CAMPOS with `valid_from = 2027-01-01` (half-open), kind `CALENDAR_DAYS_END_OF_DAY`, tz `America/Sao_Paulo`. Alerts received before 2027-01-01 keep the 120 h regime, because obligations store `regime_version` and `due_at` is never recomputed. Add a unit test for the day-3 23:59 boundary.
 2. **Bulletin:** append a new bulletin version (`exact_correction_known = true`, magnitude 1.2, applicability by build date, `known_from` = receipt time). Nothing is edited.
 3. **Replay:** run the per-tenant replay at `knowledge_cutoff = now`. The diff lists every assessment whose findings change. Signed cases with a changed conclusion become REOPEN_CANDIDATEs, with the original signatures and packages intact. Carrier invoices flagged for withdrawal go to the liability follow-up.
-4. **Approval & rollout:** QA approves the diff, then shadow, then canary, as in `03` §7. "What did we know then?" stays answerable because the older bulletin version remains recorded with its own `known_from`.
+4. **Approval & rollout:** QA approves the diff, then shadow, then canary, as in [detailed design](2-design/detailed-design.md) §7. "What did we know then?" stays answerable because the older bulletin version remains recorded with its own `known_from`.

@@ -84,7 +84,7 @@ There are 28 rows: T-AURA 72 h (5 late), T-NORDIA 72 h (3 late), T-PINNACLE 24 h
 - Aggregates are not a series. "Up to 1.8 °C" is an interval, not an offset.
 - Absent study ≠ no study. Outcome fields are excluded from kernel inputs.
 
-## 10. Assumptions register (beyond `01` §5)
+## 10. Assumptions register (beyond [where we land](where-we-land.md) §5)
 
 | # | Assumption | Basis | If wrong |
 |---|---|---|---|
