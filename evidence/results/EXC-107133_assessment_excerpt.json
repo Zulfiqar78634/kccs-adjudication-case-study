@@ -1,5 +1,5 @@
 {
-  "assessment_id": "ASM-42fed7e003e39830f09bf75e",
+  "assessment_id": "ASM-7d055f3185a57e741da03b4c",
   "disposition_evidence_status": "ABSTAIN_BLOCKING_EVIDENCE_GAPS",
   "is_disposition": false,
   "blocking_reasons": [
@@ -190,7 +190,7 @@
   "manifest": {
     "kernel_version": "0.1.0",
     "ruleset_version": "evidence-rules/0.1.0",
-    "code_sha256": "bdc82aeea3349b5f6d9ce8016fb61962a2caafacc234a0a9c81e5fa88ad27489",
+    "code_sha256": "b35f63c8a0541af546bc68e51a6c69decb8d9737dc2d88ea2c1181d3a27530e7",
     "config": {
       "sop_scope_rules.json": {
         "version": "1.0.0",
