@@ -55,7 +55,7 @@ What this does **not** cover: the real workbook was run only on Linux (this fold
 | E16 | EXC-107133 wrong-presentation study rejected | STB-3584 not admissible | same | PASS |
 | E17 | EXC-107133 correct pen study offered as a candidate | STB-2738 admissible | same | PASS |
 | E18 | EXC-107133 notification deadline counted from alert receipt | 2026-08-12T06:31:00Z | same | PASS |
-| E19 | Assessment ID reproducible across separate runs | `ASM-42fed7e003e39830f09bf75e` | same | PASS |
+| E19 | Assessment ID reproducible across separate runs | `ASM-7d055f3185a57e741da03b4c` | same | PASS |
 | E20 | Later knowledge cutoff produces a different assessment | different ID | different ID | PASS |
 | E21 | Command line: cross-tenant read refused | exit 3 | exit 3 | PASS |
 | E22 | Command line: exported package verifies | exit 0 | exit 0 | PASS |
