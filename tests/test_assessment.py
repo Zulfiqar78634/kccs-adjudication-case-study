@@ -46,7 +46,7 @@ def test_evidence_logic_modules_never_mention_outcome_fields():
     outcome = set(OUTCOME_FIELDS) - {"notes"}          # 'notes' is also a generic dict key used by result objects
     offenders = {}
     for py in SRC.glob("*.py"):
-        tree = ast.parse(py.read_text())
+        tree = ast.parse(py.read_text(encoding="utf-8"))
         names = {n.value for n in ast.walk(tree) if isinstance(n, ast.Constant) and isinstance(n.value, str)}
         if names & outcome:
             offenders[py.name] = sorted(names & outcome)

@@ -19,9 +19,11 @@ from .store import Store
 
 
 def _write(path: Path, obj: Any) -> str:
-    text = json.dumps(obj, indent=2, ensure_ascii=False, sort_keys=True, default=str) + "\n"
-    path.write_text(text, encoding="utf-8")
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+    # Write bytes, not text: text mode on Windows turns "\n" into "\r\n", so the file
+    # would no longer match the hash of the text it was written from.
+    data = (json.dumps(obj, indent=2, ensure_ascii=False, sort_keys=True, default=str) + "\n").encode("utf-8")
+    path.write_bytes(data)
+    return hashlib.sha256(data).hexdigest()
 
 
 def export_package(store: Store, principal: Principal, assessment_id: str, out_dir: str | Path, exported_at: str) -> Path:

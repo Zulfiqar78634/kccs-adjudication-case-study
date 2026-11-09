@@ -1,0 +1,6 @@
+# Keep Unix line endings on every platform. Git for Windows otherwise converts text files to CRLF,
+# which breaks the bash scripts and would change the code fingerprint inside every assessment ID.
+* text=auto eol=lf
+*.xlsx binary
+*.sqlite binary
+*.png binary

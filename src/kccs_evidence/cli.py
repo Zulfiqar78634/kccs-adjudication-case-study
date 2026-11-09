@@ -201,6 +201,10 @@ def cmd_demo(args):
 
 
 def main(argv=None):
+    # Windows consoles and redirected output default to a legacy code page; results contain "°" and "—".
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(prog="kccs-evidence")
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("ingest"); s.add_argument("--workbook", required=True); s.add_argument("--db", default=DEFAULT_DB); s.add_argument("--recorded-at"); s.set_defaults(fn=cmd_ingest)

@@ -65,11 +65,12 @@ class AlertInput:
 
 
 def code_fingerprint() -> str:
+    # Line endings are normalised so a Windows checkout (CRLF) fingerprints the same code identically.
     h = hashlib.sha256()
     pkg = resources.files("kccs_evidence")
     for name in sorted(p.name for p in pkg.iterdir() if p.name.endswith(".py")):
         h.update(name.encode())
-        h.update(pkg.joinpath(name).read_bytes())
+        h.update(pkg.joinpath(name).read_bytes().replace(b"\r\n", b"\n"))
     return h.hexdigest()
 
 
