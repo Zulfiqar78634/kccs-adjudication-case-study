@@ -3,31 +3,31 @@ $ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli ingest --work
 [exit 0]
 
 $ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli assess --db artifacts/e2e/cli.sqlite --tenant T-KAVERI --event EXC-107133 --knowledge-cutoff alert --now 2026-11-08T12:00:00Z --out artifacts/e2e/then.json
-ASM-42fed7e003e39830f09bf75e status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-7d055f3185a57e741da03b4c status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
 [exit 0]
 
 $ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli assess --db artifacts/e2e/cli.sqlite --tenant T-KAVERI --event EXC-107133 --knowledge-cutoff 2026-09-14T23:59:00Z --now 2026-11-08T12:00:00Z --out artifacts/e2e/later.json
-ASM-fffe3ad0b3aaab419e16e577 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-b6b6a6273cdec172859deb86 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
 [exit 0]
 
 $ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli assess --db artifacts/e2e/cli.sqlite --tenant T-MERIDIAN --tenant-scope T-KAVERI --event EXC-110630
 ACCESS DENIED: cli-reviewer is not authorised for T-MERIDIAN
 [exit 3]
 
-$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli export-package --db artifacts/e2e/cli.sqlite --assessment-id ASM-42fed7e003e39830f09bf75e --tenant-scope T-KAVERI --out-dir artifacts/e2e/cli_packages
-{"package": "artifacts/e2e/cli_packages/ASM-42fed7e003e39830f09bf75e", "ok": true, "problems": [], "package_digest": "227e260b8b7444f289ec12c87331cee814b28610668c574c3b566bc9ef70e981"}
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli export-package --db artifacts/e2e/cli.sqlite --assessment-id ASM-7d055f3185a57e741da03b4c --tenant-scope T-KAVERI --out-dir artifacts/e2e/cli_packages
+{"package": "artifacts/e2e/cli_packages/ASM-7d055f3185a57e741da03b4c", "ok": true, "problems": [], "package_digest": "40af7d6da99025f7586e4768d1c95489c6535041aeb118f0354d9288bded4022"}
 [exit 0]
 
-$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli verify-package artifacts/e2e/cli_packages/ASM-42fed7e003e39830f09bf75e
-{"package": "artifacts/e2e/cli_packages/ASM-42fed7e003e39830f09bf75e", "ok": true, "problems": [], "package_digest": "227e260b8b7444f289ec12c87331cee814b28610668c574c3b566bc9ef70e981"}
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli verify-package artifacts/e2e/cli_packages/ASM-7d055f3185a57e741da03b4c
+{"package": "artifacts/e2e/cli_packages/ASM-7d055f3185a57e741da03b4c", "ok": true, "problems": [], "package_digest": "40af7d6da99025f7586e4768d1c95489c6535041aeb118f0354d9288bded4022"}
 [exit 0]
 
-$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli export-package --db artifacts/e2e/cli.sqlite --assessment-id ASM-42fed7e003e39830f09bf75e --tenant-scope T-MERIDIAN --out-dir artifacts/e2e/other
-ACCESS DENIED: cli-reviewer may not export ASM-42fed7e003e39830f09bf75e
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli export-package --db artifacts/e2e/cli.sqlite --assessment-id ASM-7d055f3185a57e741da03b4c --tenant-scope T-MERIDIAN --out-dir artifacts/e2e/other
+ACCESS DENIED: cli-reviewer may not export ASM-7d055f3185a57e741da03b4c
 [exit 3]
 
-$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli verify-package artifacts/e2e/cli_packages/ASM-42fed7e003e39830f09bf75e
-{"package": "artifacts/e2e/cli_packages/ASM-42fed7e003e39830f09bf75e", "ok": false, "problems": ["hash mismatch assessment.json"], "package_digest": "227e260b8b7444f289ec12c87331cee814b28610668c574c3b566bc9ef70e981"}
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli verify-package artifacts/e2e/cli_packages/ASM-7d055f3185a57e741da03b4c
+{"package": "artifacts/e2e/cli_packages/ASM-7d055f3185a57e741da03b4c", "ok": false, "problems": ["hash mismatch assessment.json"], "package_digest": "40af7d6da99025f7586e4768d1c95489c6535041aeb118f0354d9288bded4022"}
 [exit 2]
 
 $ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli ingest --workbook data/KCCS_Sentinel_Reference_Data_Pack.xlsx --db artifacts/e2e/cli.sqlite

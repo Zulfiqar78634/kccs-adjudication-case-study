@@ -1,6 +1,6 @@
 # End-to-end test evidence
 
-**Result: 25 of 25 checks passed** on 9 November 2026 (05:33 UTC). The checks ran against the supplied workbook, in a fresh copy of the repository with a fresh Python environment.
+**Result: 25 of 25 checks passed** on 9 November 2026 (05:52 UTC). The checks ran against the supplied workbook, in a fresh copy of the repository with a fresh Python environment.
 
 The run was produced by `scripts/e2e_check.py`. You can repeat it yourself on Windows, macOS or Linux:
 
@@ -15,10 +15,10 @@ It rebuilds this whole `evidence/` folder and exits with code 0 only if every ch
 
 | Item | Value |
 |---|---|
-| Code tested | commit `6733ca4c33eb31e7ee15f840f6b72662cc312cff` |
+| Code tested | commit `84f45a7ac6524886a0f61d905cfac900b56b3148` |
 | Workbook | `KCCS_Sentinel_Reference_Data_Pack.xlsx`, 221,860 bytes, SHA-256 `9fe3fad7d0f77a5fbdaa0f8ce70336a911a8725d38d057b9d9d777c06ea57db3` |
 | Environment | Python 3.12.3 on Linux; dependency versions in `pip_freeze.txt` |
-| Duration | about 24 seconds, including the fresh install |
+| Duration | about 22 seconds, including the fresh install |
 
 The workbook itself is **not** in this folder or the repository, because it is confidential. Only derived results are kept here.
 
@@ -55,7 +55,7 @@ What this does **not** cover: the real workbook was run only on Linux (this fold
 | E16 | EXC-107133 wrong-presentation study rejected | STB-3584 not admissible | same | PASS |
 | E17 | EXC-107133 correct pen study offered as a candidate | STB-2738 admissible | same | PASS |
 | E18 | EXC-107133 notification deadline counted from alert receipt | 2026-08-12T06:31:00Z | same | PASS |
-| E19 | Assessment ID reproducible across separate runs | `ASM-42fed7e003e39830f09bf75e` | same | PASS |
+| E19 | Assessment ID reproducible across separate runs | `ASM-7d055f3185a57e741da03b4c` | same | PASS |
 | E20 | Later knowledge cutoff produces a different assessment | different ID | different ID | PASS |
 | E21 | Command line: cross-tenant read refused | exit 3 | exit 3 | PASS |
 | E22 | Command line: exported package verifies | exit 0 | exit 0 | PASS |
