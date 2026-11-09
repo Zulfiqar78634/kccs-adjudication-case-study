@@ -12,18 +12,18 @@ You can stop after any step. Steps 1–4 need no installation.
 
 ### Step 1: Read the summary (5–10 minutes)
 
-Open **[FINAL_REPORT.md](FINAL_REPORT.md)**. It covers what I concluded, what I built, what it found in the data, and what is not built.
+Open **[FINAL_REPORT.md](FINAL_REPORT.md)**. It follows the four sections you asked for, in the same order, and starts with an answer map: every requested item, a short answer, the full document and the proof.
 
 ### Step 2: Find each part you asked for
 
 | You asked for | Where it is |
 |---|---|
-| **1. Where you land**: requirements, what I won't build, rollout and first customer, gaps and contradictions, board targets I challenge | [docs/01_where_we_land.md](docs/01_where_we_land.md) |
-| **2. The design**: architecture, components, data model and "as at a date" queries, case lifecycle, outages and the regulatory clock, versioning and deployment, diagrams | [docs/02_architecture_hld.md](docs/02_architecture_hld.md) (overview) and [docs/03_detailed_design_lld.md](docs/03_detailed_design_lld.md) (detail) |
-| **3. Working prototype**: the most critical component, run on the real workbook, and how it is validated | Code in [src/kccs_evidence/](src/kccs_evidence/), tests in [tests/](tests/), validation in [docs/05_validation_and_operations.md](docs/05_validation_and_operations.md) |
-| **4. Working log**: discarded ideas, wrong assumptions and how they were caught, changes of direction | [docs/06_working_log.md](docs/06_working_log.md) |
+| **1. Where you land**: requirements, what I won't build, rollout and first customer, gaps and contradictions, board targets I challenge | [docs/1-where-you-land/where-we-land.md](docs/1-where-you-land/where-we-land.md) |
+| **2. The design**: architecture, components, data model and "as at a date" queries, case lifecycle, outages and the regulatory clock, versioning and deployment, diagrams | [docs/2-design/architecture.md](docs/2-design/architecture.md) (overview) and [docs/2-design/detailed-design.md](docs/2-design/detailed-design.md) (detail) |
+| **3. Working prototype**: the most critical component, run on the real workbook, and how it is validated | Code in [src/kccs_evidence/](src/kccs_evidence/), tests in [tests/](tests/), validation in [docs/3-prototype/validation.md](docs/3-prototype/validation.md) |
+| **4. Working log**: discarded ideas, wrong assumptions and how they were caught, changes of direction | [docs/4-working-log/working-log.md](docs/4-working-log/working-log.md) |
 
-Also useful: what the data revealed, in [docs/04_data_findings_and_assumptions.md](docs/04_data_findings_and_assumptions.md), and a 20-minute walkthrough with hard questions, in [docs/07_review_walkthrough.md](docs/07_review_walkthrough.md).
+Also useful: what the data revealed, in [docs/1-where-you-land/data-findings-and-assumptions.md](docs/1-where-you-land/data-findings-and-assumptions.md), and a 20-minute walkthrough with hard questions, in [docs/review-walkthrough.md](docs/review-walkthrough.md).
 
 ### Step 3: See the proof that it works, without running anything
 
@@ -43,22 +43,33 @@ The brief describes Priya spending 1 hour 50 minutes on this insulin alert. Open
 
 ### Step 5: Run it yourself (about 2 minutes)
 
-You need Python 3.11+ and the workbook `KCCS_Sentinel_Reference_Data_Pack.xlsx`. No API keys and no internet are needed after install.
+You need Python 3.11 or newer, git, and the workbook `KCCS_Sentinel_Reference_Data_Pack.xlsx`. No API keys and no internet are needed after install.
+
+**macOS / Linux**
 
 ```bash
 git clone https://github.com/Zulfiqar78634/kccs-adjudication-case-study.git
 cd kccs-adjudication-case-study
 mkdir -p data && cp /path/to/KCCS_Sentinel_Reference_Data_Pack.xlsx data/
-scripts/e2e_check.sh
+python3 scripts/e2e_check.py
 ```
 
-It installs everything, runs all the checks, prints PASS or FAIL for each one, and writes the evidence to `evidence/`. **Expect the last line to read `checks: 25, failed: 0`.**
+**Windows (PowerShell)**
 
-- **macOS:** the bundled `python3` is often 3.9. The script automatically uses a newer one if you have it (`python3.13`, `python3.12` or `python3.11`). If you don't, it stops with a clear message; install one with `brew install python@3.12` and re-run. To choose an interpreter explicitly: `PYTHON=/path/to/python3.12 scripts/e2e_check.sh`.
-- **Windows:** run it from WSL or Git Bash, or follow the individual commands in [docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md).
-- **Tested on:** Linux with Python 3.11, 3.12 and 3.13 (see [evidence/](evidence/E2E_EVIDENCE.md)). Not tested on macOS or Windows machines; the scripts use only portable shell commands.
+```powershell
+git clone https://github.com/Zulfiqar78634/kccs-adjudication-case-study.git
+cd kccs-adjudication-case-study
+mkdir data; copy C:\path\to\KCCS_Sentinel_Reference_Data_Pack.xlsx data\
+py -3.12 scripts\e2e_check.py        # or: python scripts\e2e_check.py
+```
 
-For each command on its own, with the output to expect at every step, see **[docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md)**.
+It creates its own Python environment, installs everything, runs all the checks, prints PASS or FAIL for each one, and writes the evidence to `evidence/`. **Expect the last line to start with `checks: 25, failed: 0`.**
+
+- **Python too old?** The script says so and stops. On macOS the bundled `python3` is often 3.9: use `python3.12` (or `brew install python@3.12`). On Windows, install from python.org or the Microsoft Store, then use `py -3.12`.
+- **No workbook to hand?** `scripts/e2e_check.py --synthetic` runs the same install and command-line checks on an invented workbook with the same layout.
+- **Tested on:** Windows, macOS and Linux with Python 3.11, 3.12 and 3.13, on every commit ([cross-platform workflow](.github/workflows/cross-platform.yml)). Those machines use the synthetic workbook, because the confidential one is never uploaded. The full run on the real workbook is recorded in [evidence/](evidence/E2E_EVIDENCE.md).
+
+For each command on its own, with the output to expect at every step, see **[docs/3-prototype/how-to-run.md](docs/3-prototype/how-to-run.md)**.
 
 ### Step 6: Read the code (optional)
 
@@ -92,7 +103,7 @@ Each file does one job:
 
 ## Reference
 
-### What the 76 tests prove
+### What the 78 tests prove
 
 | Claim | Tests |
 |---|---|
@@ -105,6 +116,7 @@ Each file does one job:
 | It never guesses and never makes a disposition (checked on all 420 alerts); past outcomes are not used as inputs | `tests/test_assessment.py` |
 | Stability checks catch wrong product forms, unreadable studies and misleading folder paths | `tests/test_stability_and_signals.py` |
 | The notification clock starts at alert receipt, is not paused by waiting, refuses to guess "next business day", and keeps every alert during a 1,912-alert storm | `tests/test_obligations.py` |
+| It behaves identically on Windows, macOS and Linux: the full command-line flow on a synthetic workbook, byte-exact evidence packages, UTF-8 console output, and IDs unchanged by Windows line endings | `tests/test_cli_portable.py` |
 
 ### What is built, simulated, or design only
 
@@ -126,20 +138,26 @@ Each file does one job:
 | `Workbook not found` | Put the file in `data/` with exactly this name: `KCCS_Sentinel_Reference_Data_Pack.xlsx` |
 | Tests show `45 skipped` | Same cause: the workbook is not in `data/` |
 | `externally-managed-environment` | Use the scripts, which create their own Python environment, or activate a virtual environment first |
-| `kccs-evidence: command not found` | Activate the environment (`. .venv/bin/activate`) or use `python -m kccs_evidence.cli` |
+| `kccs-evidence: command not found` | Activate the environment (macOS/Linux `. .venv/bin/activate`, Windows `.venv\Scripts\Activate.ps1`) or use `python -m kccs_evidence.cli` |
+| PowerShell: "running scripts is disabled" | `Set-ExecutionPolicy -Scope Process Bypass`, then activate again |
 
 ### Repository map
 
 ```
-README.md                     this page: start here
-FINAL_REPORT.md               summary of the whole submission
-docs/01 … 07                  the written deliverables (see Step 2)
-docs/STEP_BY_STEP.md          run every command, with the expected output
-evidence/                     recorded end-to-end test run (25/25 passed) and its logs
-src/kccs_evidence/            the prototype (see Step 6)
-tests/                        76 automated tests
-scripts/e2e_check.sh          run every check and record the evidence
-scripts/run_all.sh            install, test and run the demo
+README.md                          this page: start here
+FINAL_REPORT.md                    the report, in the order of the four requested sections
+docs/
+  1-where-you-land/                deliverable 1: requirements, non-goals, rollout, contradictions, board targets
+  2-design/                        deliverable 2: architecture (high level) and detailed design, with diagrams
+  3-prototype/                     deliverable 3: how to run it step by step, and how it is validated
+  4-working-log/                   deliverable 4: decisions, mistakes caught, changes of direction
+  review-walkthrough.md            20-minute walkthrough and hard questions
+evidence/                          recorded end-to-end run on the real workbook (25/25 passed) and its logs
+src/kccs_evidence/                 the prototype, one module per responsibility (see Step 6)
+tests/                             78 automated tests (45 need the real workbook; 33 run anywhere)
+scripts/e2e_check.py               run every check and record the evidence (Windows, macOS, Linux)
+scripts/run_all.sh                 macOS/Linux: install, test and run the demo
+.github/workflows/                 CI: tests and lint on every commit, on Windows, macOS and Linux
 ```
 
 The confidential workbook is not in this repository. Results produced on your machine go to `artifacts/`, which is also not committed.

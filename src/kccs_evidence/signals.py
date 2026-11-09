@@ -4,6 +4,7 @@ All arithmetic here is a reviewer aid. Aggregates (min/max/mean/duration) are
 not a temperature series; cumulative or once-only conditions cannot be verified
 without batch exposure history, which the pack does not contain.
 """
+
 from __future__ import annotations
 
 import re
@@ -46,10 +47,22 @@ def parse_limit(text: str | None) -> dict[str, Any]:
         return {"kind": "ABSENT"}
     t = text.replace("≤", "<=").replace("°", "").casefold()
     pats = [
-        (rf"one excursion, up to ({NUM}) h below ({NUM})", lambda m: {"kind": "SINGLE_BELOW_CEILING", "hours": float(m[1]), "ceiling_c": float(m[2]), "once_only": True}),
-        (rf"<=\s*({NUM}) h to ({NUM}) c, once only", lambda m: {"kind": "SINGLE_BELOW_CEILING", "hours": float(m[1]), "ceiling_c": float(m[2]), "once_only": True}),
-        (rf"single excursion <=\s*({NUM}) h to ({NUM})", lambda m: {"kind": "SINGLE_BELOW_CEILING", "hours": float(m[1]), "ceiling_c": float(m[2]), "once_only": True}),
-        (rf"one excursion, up to ({NUM}) h above ({NUM})", lambda m: {"kind": "SINGLE_ABOVE_THRESHOLD", "hours": float(m[1]), "threshold_c": float(m[2]), "once_only": True}),
+        (
+            rf"one excursion, up to ({NUM}) h below ({NUM})",
+            lambda m: {"kind": "SINGLE_BELOW_CEILING", "hours": float(m[1]), "ceiling_c": float(m[2]), "once_only": True},
+        ),
+        (
+            rf"<=\s*({NUM}) h to ({NUM}) c, once only",
+            lambda m: {"kind": "SINGLE_BELOW_CEILING", "hours": float(m[1]), "ceiling_c": float(m[2]), "once_only": True},
+        ),
+        (
+            rf"single excursion <=\s*({NUM}) h to ({NUM})",
+            lambda m: {"kind": "SINGLE_BELOW_CEILING", "hours": float(m[1]), "ceiling_c": float(m[2]), "once_only": True},
+        ),
+        (
+            rf"one excursion, up to ({NUM}) h above ({NUM})",
+            lambda m: {"kind": "SINGLE_ABOVE_THRESHOLD", "hours": float(m[1]), "threshold_c": float(m[2]), "once_only": True},
+        ),
         (rf"cumulative ({NUM}) h above ({NUM})", lambda m: {"kind": "CUMULATIVE_ABOVE", "hours": float(m[1]), "threshold_c": float(m[2])}),
         (rf"excursions to ({NUM}) ?c.*?up to ({NUM}) d", lambda m: {"kind": "CUMULATIVE_CEILING_DAYS", "ceiling_c": float(m[1]), "days": float(m[2])}),
         (rf"no excursion above ({NUM}) c beyond ({NUM}) h", lambda m: {"kind": "CEILING_WITH_DURATION", "ceiling_c": float(m[1]), "hours": float(m[2])}),
@@ -98,21 +111,23 @@ def evaluate_limit(limit: dict[str, Any], ev: dict[str, Any], spec: tuple | None
         elif dur > limit["hours"] * 60:
             status = "EXCEEDS_STATED_LIMIT"
         else:
-            status = band(max_band[0] >= limit["ceiling_c"], max_band[1] >= limit["ceiling_c"],
-                          "WITHIN_STATED_LIMIT_FOR_THIS_EVENT_ONLY", "EXCEEDS_STATED_LIMIT")
+            status = band(
+                max_band[0] >= limit["ceiling_c"], max_band[1] >= limit["ceiling_c"], "WITHIN_STATED_LIMIT_FOR_THIS_EVENT_ONLY", "EXCEEDS_STATED_LIMIT"
+            )
         unverifiable.append("'once only' requires the batch's full excursion history (not in pack)")
     elif kind == "SINGLE_ABOVE_THRESHOLD":
         status = "EXCEEDS_STATED_LIMIT" if dur > limit["hours"] * 60 else "WITHIN_STATED_LIMIT_FOR_THIS_EVENT_ONLY"
         unverifiable.append("'once only' requires the batch's full excursion history (not in pack)")
     elif kind == "CUMULATIVE_ABOVE":
         status = "CUMULATIVE_UNVERIFIABLE"
-        unverifiable.append(f"lifetime exposure above {limit['threshold_c']} °C for this batch is unknown; this event alone contributes up to {dur} min of {limit['hours']} h")
+        unverifiable.append(
+            f"lifetime exposure above {limit['threshold_c']} °C for this batch is unknown; this event alone contributes up to {dur} min of {limit['hours']} h"
+        )
     elif kind == "CUMULATIVE_CEILING_DAYS":
         status = band(max_band[0] > limit["ceiling_c"], max_band[1] > limit["ceiling_c"], "CUMULATIVE_UNVERIFIABLE", "EXCEEDS_STATED_LIMIT")
         unverifiable.append("cumulative days at elevated temperature for this batch are unknown")
     elif kind == "CEILING":
-        status = band(max_band[0] > limit["ceiling_c"], max_band[1] > limit["ceiling_c"],
-                      "CEILING_NOT_EXCEEDED_BY_REPORTED_MAX", "EXCEEDS_STATED_LIMIT")
+        status = band(max_band[0] > limit["ceiling_c"], max_band[1] > limit["ceiling_c"], "CEILING_NOT_EXCEEDED_BY_REPORTED_MAX", "EXCEEDS_STATED_LIMIT")
     elif kind == "CEILING_WITH_DURATION":
         if max_band[1] <= limit["ceiling_c"]:
             status = "CEILING_NOT_EXCEEDED_BY_REPORTED_MAX"
@@ -129,9 +144,13 @@ def evaluate_limit(limit: dict[str, Any], ev: dict[str, Any], spec: tuple | None
         status = "NOT_AN_ALLOWANCE"
     else:
         status = "NOT_EVALUATED"
-    return {"limit": limit, "status": status, "reported": {"max_c": mx, "min_c": mn, "duration_min": dur},
-            "firmware_band_c": {"max": list(max_band), "min": list(min_band)} if up else None,
-            "unverifiable_conditions": unverifiable}
+    return {
+        "limit": limit,
+        "status": status,
+        "reported": {"max_c": mx, "min_c": mn, "duration_min": dur},
+        "firmware_band_c": {"max": list(max_band), "min": list(min_band)} if up else None,
+        "unverifiable_conditions": unverifiable,
+    }
 
 
 def excursion_direction(ev: dict[str, Any], spec: tuple | None, fw: dict | None) -> str:
@@ -153,27 +172,62 @@ def excursion_direction(ev: dict[str, Any], spec: tuple | None, fw: dict | None)
 
 
 def telemetry_findings(ev: dict[str, Any], source_ref: str) -> list[Finding]:
-    f = [Finding("TEMPERATURE_SERIES_NOT_AVAILABLE", BLOCKING, "telemetry",
-                 "Only aggregate statistics (min/max/mean/duration) are available; the temperature series relied on must be retained for the disposition basis (AUD-2603). Telemetry archive is a stub in this prototype.",
-                 (source_ref,), "Snapshot the raw series from the telemetry source into the evidence store")]
+    f = [
+        Finding(
+            "TEMPERATURE_SERIES_NOT_AVAILABLE",
+            BLOCKING,
+            "telemetry",
+            "Only aggregate statistics (min/max/mean/duration) are available; the temperature series relied on must be retained for the disposition basis (AUD-2603). Telemetry archive is a stub in this prototype.",
+            (source_ref,),
+            "Snapshot the raw series from the telemetry source into the evidence store",
+        )
+    ]
     gap, dur = ev["gateway_gap_min"], ev["duration_min"]
     if gap and gap >= dur:
-        f.append(Finding("GATEWAY_GAP_SPANS_EXCURSION", BLOCKING, "telemetry",
-                         f"Gateway gap of {gap} min is at least the excursion duration ({dur} min); the excursion may be an artefact of missing data.",
-                         (source_ref,), "Obtain backfilled readings or treat as unproven"))
+        f.append(
+            Finding(
+                "GATEWAY_GAP_SPANS_EXCURSION",
+                BLOCKING,
+                "telemetry",
+                f"Gateway gap of {gap} min is at least the excursion duration ({dur} min); the excursion may be an artefact of missing data.",
+                (source_ref,),
+                "Obtain backfilled readings or treat as unproven",
+            )
+        )
     elif gap:
         f.append(Finding("GATEWAY_GAP_IN_WINDOW", REVIEW, "telemetry", f"Gateway gap of {gap} min within the excursion window.", (source_ref,)))
     if ev["interpolated"] == "Y":
-        f.append(Finding("INTERPOLATED_READINGS", REVIEW, "telemetry",
-                         "Readings in the window are partly interpolated, i.e. not measured.", (source_ref,),
-                         "Distinguish measured from interpolated readings"))
+        f.append(
+            Finding(
+                "INTERPOLATED_READINGS",
+                REVIEW,
+                "telemetry",
+                "Readings in the window are partly interpolated, i.e. not measured.",
+                (source_ref,),
+                "Distinguish measured from interpolated readings",
+            )
+        )
     if ev["readings_in_window"] is not None and ev["readings_in_window"] <= 1:
         f.append(Finding("SPARSE_READINGS", REVIEW, "telemetry", f"{ev['readings_in_window']} reading(s) in window.", (source_ref,)))
     if ev["dock_door_open_flag"] == "Y":
-        f.append(Finding("DOCK_DOOR_ALIGNMENT_UNVERIFIED", INFO, "telemetry",
-                         "Dock-door flag set; whether the door event precedes the excursion cannot be checked without the door log.", (source_ref,)))
+        f.append(
+            Finding(
+                "DOCK_DOOR_ALIGNMENT_UNVERIFIED",
+                INFO,
+                "telemetry",
+                "Dock-door flag set; whether the door event precedes the excursion cannot be checked without the door log.",
+                (source_ref,),
+            )
+        )
     if ev["source_system"] == "SYS-03":
-        f.append(Finding("BMS_TENANT_ATTRIBUTION_DERIVED", REVIEW, "attribution",
-                         "Facility BMS telemetry carries no tenant tags (11_Systems_Inventory!R4); tenant/consignment attribution came from a TMS join that is not reproducible from the pack, and product-in-room is unverified.",
-                         (source_ref, "11_Systems_Inventory!R4"), "Confirm product was loaded and owned by this tenant"))
+        f.append(
+            Finding(
+                "BMS_TENANT_ATTRIBUTION_DERIVED",
+                REVIEW,
+                "attribution",
+                "Facility BMS telemetry carries no tenant tags (11_Systems_Inventory!R4); tenant/consignment attribution came from a TMS join that is not reproducible from the pack, and product-in-room is unverified.",
+                (source_ref, "11_Systems_Inventory!R4"),
+                "Confirm product was loaded and owned by this tenant",
+            )
+        )
     return f

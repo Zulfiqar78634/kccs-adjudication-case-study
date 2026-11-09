@@ -1,0 +1,87 @@
+name: Cross-platform (Windows, macOS, Linux)
+
+# The confidential workbook is never in this repository, so these jobs use a synthetic workbook with the
+# same layout (tests/synthetic_workbook.py). They exercise everything platform-specific: install, line
+# endings, console encoding, file paths, SQLite, time zones and the reviewer-facing scripts.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        python: ["3.11", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Use Git for Windows defaults (convert line endings to CRLF on checkout)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf true
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install and run the full test suite
+        env:
+          KCCS_ID_OUT: ${{ github.workspace }}/assessment-id.txt
+        run: |
+          python -m pip install -e ".[dev]"
+          python -m pytest -v -o addopts=""
+
+      - name: End-to-end checker (synthetic workbook)
+        run: python scripts/e2e_check.py --synthetic
+
+      - name: macOS/Linux wrapper script
+        if: runner.os != 'Windows'
+        run: scripts/e2e_check.sh --synthetic
+
+      - name: Windows PowerShell 5.1, following the README's Windows instructions
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python -m venv .venv-ps
+          .\.venv-ps\Scripts\Activate.ps1
+          pip install -q -e ".[dev]"
+          kccs-evidence --help
+          python -c "import sys; sys.path.insert(0, 'tests'); from synthetic_workbook import build; build('synthetic.xlsx')"
+          kccs-evidence ingest --workbook synthetic.xlsx --db ps.sqlite
+          if ($LASTEXITCODE -ne 0) { throw "ingest failed" }
+          kccs-evidence assess --db ps.sqlite --tenant T-KAVERI --event EXC-900001 --knowledge-cutoff alert --now 2026-11-08T12:00:00Z
+          if ($LASTEXITCODE -ne 0) { throw "assess to console failed" }
+          kccs-evidence assess --db ps.sqlite --tenant T-KAVERI --event EXC-900001 --knowledge-cutoff alert --now 2026-11-08T12:00:00Z --out ps.json
+          $id = (Get-Content ps.json -Raw | ConvertFrom-Json).assessment_id
+          kccs-evidence export-package --db ps.sqlite --assessment-id $id --tenant-scope T-KAVERI --out-dir ps_packages
+          kccs-evidence verify-package "ps_packages\$id"
+          if ($LASTEXITCODE -ne 0) { throw "package did not verify" }
+          kccs-evidence assess --db ps.sqlite --tenant T-PINNACLE --tenant-scope T-KAVERI --event EXC-900002
+          if ($LASTEXITCODE -ne 3) { throw "cross-tenant read was not refused" }
+          Write-Output "PowerShell walkthrough passed (assessment $id)"
+          exit 0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: id-${{ matrix.os }}-${{ matrix.python }}
+          path: assessment-id.txt
+
+  same-result-everywhere:
+    name: Same assessment ID on every OS and Python version
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: ids
+      - run: |
+          for f in ids/*/assessment-id.txt; do echo "$(dirname "$f" | xargs basename): $(head -1 "$f")"; done
+          n=$(cat ids/*/assessment-id.txt | sort -u | wc -l)
+          echo "distinct lines (ID + code fingerprint): $n"
+          test "$n" -eq 2 || { echo "::error::assessment IDs differ between machines"; exit 1; }

@@ -1,11 +1,11 @@
-# 05 — Validation and operations
+# Deliverable 3: Validation, today and over time
 
 ## 1. How we know it works today
 
-Executed in this session (the full output is regenerated into `artifacts/test_output.txt` by `scripts/run_all.sh`):
+Executed (the full output is regenerated into `evidence/logs/02_pytest.log` by `python scripts/e2e_check.py`):
 
 ```
-python -m pytest -v      → 76 passed (Python 3.12.3, openpyxl 3.1.5, pytest 8.3.5)
+python -m pytest -v      → 78 passed (Python 3.12.3, openpyxl 3.1.5, pytest 8.3.5)
 kccs-evidence demo …     → 420 events × 2 knowledge views = 840 assessments (+1 after the simulated correction);
                            6 evidence packages (selected real cases) exported and re-verified OK; cross-tenant read denied and audited
 ```

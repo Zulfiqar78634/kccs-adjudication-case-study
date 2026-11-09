@@ -10,13 +10,15 @@
 UPDATE/DELETE on these tables are rejected by triggers, so immutability does not
 depend on application discipline.
 """
+
 from __future__ import annotations
 
 import json
 import sqlite3
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from . import STORE_SCHEMA_VERSION
 from .sources import SourceRecord, SourceSnapshot, canonical_json, sha256_text
@@ -67,7 +69,8 @@ class Store:
             for op in ("UPDATE", "DELETE"):
                 self.db.execute(
                     f"CREATE TRIGGER IF NOT EXISTS trg_{t}_no_{op.lower()} BEFORE {op} ON {t} "
-                    f"BEGIN SELECT RAISE(ABORT, 'append-only table {t}: {op} rejected'); END")
+                    f"BEGIN SELECT RAISE(ABORT, 'append-only table {t}: {op} rejected'); END"
+                )
         self.db.execute("INSERT OR IGNORE INTO meta VALUES ('schema_version', ?)", (str(STORE_SCHEMA_VERSION),))
         self.db.commit()
 
@@ -75,8 +78,9 @@ class Store:
     def ingest_snapshot(self, snap: SourceSnapshot, recorded_at: str) -> dict[str, int]:
         stats = {"new_records": 0, "new_versions": 0, "unchanged": 0}
         with self.db:
-            self.db.execute("INSERT OR IGNORE INTO source_snapshot VALUES (?,?,?,?,?)",
-                            (snap.snapshot_id, snap.file_name, snap.file_sha256, snap.extract_date, recorded_at))
+            self.db.execute(
+                "INSERT OR IGNORE INTO source_snapshot VALUES (?,?,?,?,?)", (snap.snapshot_id, snap.file_name, snap.file_sha256, snap.extract_date, recorded_at)
+            )
             for rec in snap.records:
                 latest = self._latest_version_row(rec.sheet, rec.record_key)
                 if latest is None:
@@ -85,13 +89,11 @@ class Store:
                 elif latest["row_hash"] == rec.row_hash:
                     stats["unchanged"] += 1
                 else:
-                    self._insert_version(rec, latest["version"] + 1, snap.snapshot_id, recorded_at,
-                                         "INGEST", "changed in later snapshot", "ingest")
+                    self._insert_version(rec, latest["version"] + 1, snap.snapshot_id, recorded_at, "INGEST", "changed in later snapshot", "ingest")
                     stats["new_versions"] += 1
         return stats
 
-    def apply_correction(self, sheet: str, record_key: str, changes: dict[str, Any], recorded_at: str,
-                         actor: str, reason: str) -> int:
+    def apply_correction(self, sheet: str, record_key: str, changes: dict[str, Any], recorded_at: str, actor: str, reason: str) -> int:
         latest = self._latest_version_row(sheet, record_key)
         if latest is None:
             raise KeyError(f"No source record {sheet}/{record_key}")
@@ -100,28 +102,44 @@ class Store:
         if unknown:
             raise ValueError(f"Correction names columns not in source record: {unknown}")
         payload.update(changes)
-        rec = SourceRecord(sheet=sheet, record_key=record_key, excel_row=latest["excel_row"],
-                           tenant_code=latest["tenant_code"], attribution=latest["attribution"], payload=payload,
-                           row_hash=sha256_text(canonical_json({"sheet": sheet, "payload": payload})))
+        rec = SourceRecord(
+            sheet=sheet,
+            record_key=record_key,
+            excel_row=latest["excel_row"],
+            tenant_code=latest["tenant_code"],
+            attribution=latest["attribution"],
+            payload=payload,
+            row_hash=sha256_text(canonical_json({"sheet": sheet, "payload": payload})),
+        )
         version = latest["version"] + 1
         with self.db:
             self._insert_version(rec, version, None, recorded_at, "CORRECTION", reason, actor)
         return version
 
-    def _insert_version(self, rec: SourceRecord, version: int, snapshot_id: str | None, recorded_at: str,
-                        kind: str, reason: str | None, actor: str) -> None:
+    def _insert_version(self, rec: SourceRecord, version: int, snapshot_id: str | None, recorded_at: str, kind: str, reason: str | None, actor: str) -> None:
         self.db.execute(
             "INSERT INTO source_record_version VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-            (rec.sheet, rec.record_key, version, rec.excel_row, rec.tenant_code, rec.attribution,
-             canonical_json(rec.payload), rec.row_hash, snapshot_id, recorded_at, kind, reason, actor))
+            (
+                rec.sheet,
+                rec.record_key,
+                version,
+                rec.excel_row,
+                rec.tenant_code,
+                rec.attribution,
+                canonical_json(rec.payload),
+                rec.row_hash,
+                snapshot_id,
+                recorded_at,
+                kind,
+                reason,
+                actor,
+            ),
+        )
 
     def _latest_version_row(self, sheet: str, key: str):
-        return self.db.execute(
-            "SELECT * FROM source_record_version WHERE sheet=? AND record_key=? ORDER BY version DESC LIMIT 1",
-            (sheet, key)).fetchone()
+        return self.db.execute("SELECT * FROM source_record_version WHERE sheet=? AND record_key=? ORDER BY version DESC LIMIT 1", (sheet, key)).fetchone()
 
-    def records(self, sheet: str, *, tenant: str | None = None, shared: bool = False,
-                as_known_at: str | None = None) -> list["VersionedRecord"]:
+    def records(self, sheet: str, *, tenant: str | None = None, shared: bool = False, as_known_at: str | None = None) -> list[VersionedRecord]:
         """Latest version per key known at `as_known_at` (ISO UTC; None = now).
 
         Exactly one of tenant / shared must be given: tenant-scoped sheets are
@@ -130,9 +148,11 @@ class Store:
         if (tenant is None) == (not shared):
             raise ValueError("records() requires exactly one of tenant=... or shared=True")
         cutoff = as_known_at or "9999-12-31T23:59:59Z"
-        q = ("SELECT v.* FROM source_record_version v WHERE v.sheet=? AND v.recorded_at<=? "
-             "AND v.version = (SELECT MAX(version) FROM source_record_version w WHERE w.sheet=v.sheet "
-             "AND w.record_key=v.record_key AND w.recorded_at<=?)")
+        q = (
+            "SELECT v.* FROM source_record_version v WHERE v.sheet=? AND v.recorded_at<=? "
+            "AND v.version = (SELECT MAX(version) FROM source_record_version w WHERE w.sheet=v.sheet "
+            "AND w.record_key=v.record_key AND w.recorded_at<=?)"
+        )
         args: list[Any] = [sheet, cutoff, cutoff]
         if tenant is not None:
             q += " AND v.tenant_code=?"
@@ -142,23 +162,37 @@ class Store:
         q += " ORDER BY v.excel_row"
         return [VersionedRecord.from_row(r) for r in self.db.execute(q, args)]
 
-    def record_history(self, sheet: str, key: str) -> list["VersionedRecord"]:
-        return [VersionedRecord.from_row(r) for r in self.db.execute(
-            "SELECT * FROM source_record_version WHERE sheet=? AND record_key=? ORDER BY version", (sheet, key))]
+    def record_history(self, sheet: str, key: str) -> list[VersionedRecord]:
+        return [
+            VersionedRecord.from_row(r)
+            for r in self.db.execute("SELECT * FROM source_record_version WHERE sheet=? AND record_key=? ORDER BY version", (sheet, key))
+        ]
 
     def snapshots(self) -> list[dict[str, Any]]:
         return [dict(r) for r in self.db.execute("SELECT * FROM source_snapshot ORDER BY recorded_at")]
 
     # ---------------- mapping assertions ----------------
-    def add_mapping(self, *, assertion_id: str, tenant: str | None, kind: str, source_string: str,
-                    canonical_id: str, decision: str, actor: str, recorded_at: str,
-                    evidence_ref: str | None = None, note: str | None = None) -> None:
+    def add_mapping(
+        self,
+        *,
+        assertion_id: str,
+        tenant: str | None,
+        kind: str,
+        source_string: str,
+        canonical_id: str,
+        decision: str,
+        actor: str,
+        recorded_at: str,
+        evidence_ref: str | None = None,
+        note: str | None = None,
+    ) -> None:
         if decision not in ("APPROVED", "REJECTED"):
             raise ValueError("decision must be APPROVED or REJECTED")
         with self.db:
-            self.db.execute("INSERT INTO mapping_assertion VALUES (?,?,?,?,?,?,?,?,?,?)",
-                            (assertion_id, tenant, kind, source_string, canonical_id, decision, actor,
-                             recorded_at, evidence_ref, note))
+            self.db.execute(
+                "INSERT INTO mapping_assertion VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (assertion_id, tenant, kind, source_string, canonical_id, decision, actor, recorded_at, evidence_ref, note),
+            )
 
     def mappings(self, kind: str, tenant: str | None, as_known_at: str | None) -> list[dict[str, Any]]:
         cutoff = as_known_at or "9999-12-31T23:59:59Z"
@@ -173,8 +207,18 @@ class Store:
         body = canonical_json(payload)
         cur = self.db.execute(
             "INSERT OR IGNORE INTO assessment VALUES (?,?,?,?,?,?,?,?,?)",
-            (aid, payload["event"]["event_id"], payload["event"]["tenant_code"], payload["time_semantics"]["valid_at"],
-             payload["time_semantics"]["knowledge_cutoff"], payload.get("supersedes"), body, sha256_text(body), stored_at))
+            (
+                aid,
+                payload["event"]["event_id"],
+                payload["event"]["tenant_code"],
+                payload["time_semantics"]["valid_at"],
+                payload["time_semantics"]["knowledge_cutoff"],
+                payload.get("supersedes"),
+                body,
+                sha256_text(body),
+                stored_at,
+            ),
+        )
         self.db.commit()
         return aid, cur.rowcount == 1
 
@@ -182,17 +226,20 @@ class Store:
         return self.db.execute("SELECT * FROM assessment WHERE assessment_id=?", (assessment_id,)).fetchone()
 
     def assessments_for_event(self, tenant: str, event_id: str) -> list[dict[str, Any]]:
-        return [dict(r) for r in self.db.execute(
-            "SELECT * FROM assessment WHERE tenant_code=? AND event_id=? ORDER BY first_stored_at, assessment_id",
-            (tenant, event_id))]
+        """Stored assessments of one event, oldest first."""
+        # Ties on first_stored_at (e.g. a fixed demo clock) fall back to insertion order (rowid), not to the
+        # assessment_id hash, which changes with the code fingerprint and would make "supersedes" arbitrary.
+        return [
+            dict(r) for r in self.db.execute("SELECT * FROM assessment WHERE tenant_code=? AND event_id=? ORDER BY first_stored_at, rowid", (tenant, event_id))
+        ]
 
     # ---------------- audit ----------------
-    def audit(self, *, at: str, actor: str, tenant: str | None, action: str, target: str | None,
-              outcome: str, detail: dict[str, Any] | None = None) -> None:
+    def audit(self, *, at: str, actor: str, tenant: str | None, action: str, target: str | None, outcome: str, detail: dict[str, Any] | None = None) -> None:
         with self.db:
-            self.db.execute("INSERT INTO audit_event (at, actor, tenant_code, action, target, outcome, detail_json) "
-                            "VALUES (?,?,?,?,?,?,?)", (at, actor, tenant, action, target, outcome,
-                                                       canonical_json(detail or {})))
+            self.db.execute(
+                "INSERT INTO audit_event (at, actor, tenant_code, action, target, outcome, detail_json) VALUES (?,?,?,?,?,?,?)",
+                (at, actor, tenant, action, target, outcome, canonical_json(detail or {})),
+            )
 
     def audit_events(self, action: str | None = None) -> list[dict[str, Any]]:
         q, args = "SELECT * FROM audit_event", []
@@ -213,8 +260,16 @@ class VersionedRecord(SourceRecord):
     change_kind: str = "INGEST"
 
     @classmethod
-    def from_row(cls, r) -> "VersionedRecord":
-        return cls(sheet=r["sheet"], record_key=r["record_key"], excel_row=r["excel_row"],
-                   tenant_code=r["tenant_code"], attribution=r["attribution"],
-                   payload=json.loads(r["payload_json"]), row_hash=r["row_hash"],
-                   version=r["version"], recorded_at=r["recorded_at"], change_kind=r["change_kind"])
+    def from_row(cls, r) -> VersionedRecord:
+        return cls(
+            sheet=r["sheet"],
+            record_key=r["record_key"],
+            excel_row=r["excel_row"],
+            tenant_code=r["tenant_code"],
+            attribution=r["attribution"],
+            payload=json.loads(r["payload_json"]),
+            row_hash=r["row_hash"],
+            version=r["version"],
+            recorded_at=r["recorded_at"],
+            change_kind=r["change_kind"],
+        )

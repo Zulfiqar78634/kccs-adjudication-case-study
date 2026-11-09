@@ -11,6 +11,7 @@
 * Storm handling groups obligations for triage but always keeps one obligation
   per alert; registration is idempotent by (tenant, event_id).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -31,7 +32,7 @@ class IllegalTransition(RuntimeError):
 
 @dataclass(frozen=True)
 class Regime:
-    kind: str                                   # ELAPSED_HOURS | NEXT_BUSINESS_DAY
+    kind: str  # ELAPSED_HOURS | NEXT_BUSINESS_DAY
     hours: float | None = None
     tz: str | None = None
     holidays: frozenset = frozenset()
@@ -39,7 +40,7 @@ class Regime:
     source: str | None = None
 
     @classmethod
-    def from_config(cls, cfg: dict[str, Any]) -> "Regime":
+    def from_config(cls, cfg: dict[str, Any]) -> Regime:
         return cls(kind=cfg["kind"], hours=cfg.get("hours"), source=cfg.get("source"))
 
 
@@ -98,15 +99,14 @@ class ObligationLedger:
     def __init__(self) -> None:
         self._by_key: dict[tuple[str, str], Obligation] = {}
 
-    def register(self, tenant: str, event_id: str, alert_received_at: datetime, regime: Regime,
-                 group_id: str | None = None) -> tuple[Obligation, bool]:
+    def register(self, tenant: str, event_id: str, alert_received_at: datetime, regime: Regime, group_id: str | None = None) -> tuple[Obligation, bool]:
         key = (tenant, event_id)
         if key in self._by_key:
             return self._by_key[key], False
         try:
             due = compute_due_at(alert_received_at, regime)
         except PolicyIncomplete:
-            due = None              # escalated immediately by at_risk(); never silently dropped
+            due = None  # escalated immediately by at_risk(); never silently dropped
         ob = Obligation(f"OBL-{tenant}-{event_id}", tenant, event_id, alert_received_at, due, regime.kind, group_id=group_id)
         ob.history.append({"state": ob.state, "at": iso(alert_received_at), "by": "system", "note": "registered at alert receipt"})
         self._by_key[key] = ob
@@ -119,8 +119,7 @@ class ObligationLedger:
             created += int(new)
         return created
 
-    def transition(self, tenant: str, event_id: str, new_state: str, *, at: datetime, by: str,
-                   expected_version: int, note: str = "") -> Obligation:
+    def transition(self, tenant: str, event_id: str, new_state: str, *, at: datetime, by: str, expected_version: int, note: str = "") -> Obligation:
         ob = self._by_key[(tenant, event_id)]
         if ob.version != expected_version:
             raise IllegalTransition(f"version conflict: expected {expected_version}, current {ob.version}")

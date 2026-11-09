@@ -10,12 +10,13 @@
 * Knowledge time (recorded_at) is when this system learned a fact. It is never
   inferred from valid time.
 """
+
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-UTC = timezone.utc
+UTC = UTC
 OPEN_END = date.max
 
 

@@ -1,4 +1,8 @@
-Obtaining file:///tmp/run3.12
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m pip install -q --upgrade pip
+[exit 0]
+
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m pip install -e .[dev]
+Obtaining file:///tmp/hoplite/workspace
   Installing build dependencies: started
   Installing build dependencies: finished with status 'done'
   Checking if build backend supports build_editable: started
@@ -13,6 +17,8 @@ Collecting tzdata>=2024.1 (from kccs-evidence-kernel==0.1.0)
   Using cached tzdata-2026.6-py2.py3-none-any.whl.metadata (1.4 kB)
 Collecting pytest==8.3.5 (from kccs-evidence-kernel==0.1.0)
   Using cached pytest-8.3.5-py3-none-any.whl.metadata (7.6 kB)
+Collecting ruff==0.17.4 (from kccs-evidence-kernel==0.1.0)
+  Using cached ruff-0.17.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (20 kB)
 Collecting et-xmlfile (from openpyxl==3.1.5->kccs-evidence-kernel==0.1.0)
   Using cached et_xmlfile-2.0.0-py3-none-any.whl.metadata (2.7 kB)
 Collecting iniconfig (from pytest==8.3.5->kccs-evidence-kernel==0.1.0)
@@ -23,6 +29,7 @@ Collecting pluggy<2,>=1.5 (from pytest==8.3.5->kccs-evidence-kernel==0.1.0)
   Using cached pluggy-1.7.0-py3-none-any.whl.metadata (5.0 kB)
 Using cached openpyxl-3.1.5-py2.py3-none-any.whl (250 kB)
 Using cached pytest-8.3.5-py3-none-any.whl (343 kB)
+Using cached ruff-0.17.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.6 MB)
 Using cached pluggy-1.7.0-py3-none-any.whl (27 kB)
 Using cached tzdata-2026.6-py2.py3-none-any.whl (348 kB)
 Using cached et_xmlfile-2.0.0-py3-none-any.whl (18 kB)
@@ -31,9 +38,26 @@ Using cached packaging-26.3-py3-none-any.whl (129 kB)
 Building wheels for collected packages: kccs-evidence-kernel
   Building editable for kccs-evidence-kernel (pyproject.toml): started
   Building editable for kccs-evidence-kernel (pyproject.toml): finished with status 'done'
-  Created wheel for kccs-evidence-kernel: filename=kccs_evidence_kernel-0.1.0-0.editable-py3-none-any.whl size=1749 sha256=8475ddd1a3fb0fc23bf12561542e0fc00f8b47a9976c96d22fac3c1b1a180f5d
-  Stored in directory: /tmp/pip-ephem-wheel-cache-dmjklli5/wheels/ef/c9/45/5e1d847c56356ee5e0e7382965b310b5c606e8876b14d5f5ed
+  Created wheel for kccs-evidence-kernel: filename=kccs_evidence_kernel-0.1.0-0.editable-py3-none-any.whl size=1773 sha256=b063b65dcd65a54c4ca308c01fc2a5cabe5d54ce827fa00f7ff7ffc4dc651350
+  Stored in directory: /tmp/pip-ephem-wheel-cache-br2ubnf9/wheels/d7/1e/9a/fbff3f78e1ba3c344c2fe5d68599a30821edcd71f8616f0d23
 Successfully built kccs-evidence-kernel
-Installing collected packages: tzdata, pluggy, packaging, iniconfig, et-xmlfile, pytest, openpyxl, kccs-evidence-kernel
+Installing collected packages: tzdata, ruff, pluggy, packaging, iniconfig, et-xmlfile, pytest, openpyxl, kccs-evidence-kernel
 
-Successfully installed et-xmlfile-2.0.0 iniconfig-2.3.1 kccs-evidence-kernel-0.1.0 openpyxl-3.1.5 packaging-26.3 pluggy-1.7.0 pytest-8.3.5 tzdata-2026.6
+Successfully installed et-xmlfile-2.0.0 iniconfig-2.3.1 kccs-evidence-kernel-0.1.0 openpyxl-3.1.5 packaging-26.3 pluggy-1.7.0 pytest-8.3.5 ruff-0.17.4 tzdata-2026.6
+[exit 0]
+
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m pip freeze --exclude-editable
+et_xmlfile==2.0.0
+iniconfig==2.3.1
+openpyxl==3.1.5
+packaging==26.3
+pluggy==1.7.0
+pytest==8.3.5
+ruff==0.17.4
+tzdata==2026.6
+[exit 0]
+
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python --version
+Python 3.12.3
+[exit 0]
+

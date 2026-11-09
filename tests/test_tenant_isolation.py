@@ -1,7 +1,8 @@
 """Tenant isolation: enforced before retrieval, across resolution, stability, packages and audit."""
-import pytest
 
+import pytest
 from conftest import clock, principal
+
 from kccs_evidence.access import TenantAccessDenied, TenantView
 from kccs_evidence.assessment import build_assessment
 from kccs_evidence.package import export_package
@@ -24,7 +25,7 @@ def test_cross_tenant_assessment_denied(store, snapshot):
 def test_event_of_other_tenant_is_not_found_rather_than_revealed(store):
     view = TenantView(store, principal("T-PINNACLE"), "T-PINNACLE", clock=clock)
     with pytest.raises(KeyError):
-        view.event("EXC-107133")                 # a T-KAVERI event
+        view.event("EXC-107133")  # a T-KAVERI event
 
 
 def test_same_gtin_under_multiple_tenants_resolves_within_tenant(store):
@@ -50,7 +51,7 @@ def test_product_aliases_are_quarantined_for_every_tenant(store):
     view = TenantView(store, principal("T-VIRENT"), "T-VIRENT", clock=clock)
     with pytest.raises(TenantAccessDenied):
         view.alias_observations("PRODUCT")
-    res, _ = resolve_product(view, "ins glargine kbx")   # an alias string in 07, not in T-VIRENT master
+    res, _ = resolve_product(view, "ins glargine kbx")  # an alias string in 07, not in T-VIRENT master
     assert res.status == "UNRESOLVED"
 
 
