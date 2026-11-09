@@ -1,4 +1,4 @@
-# 02 — Architecture (HLD)
+# Deliverable 2: Architecture (high-level design)
 
 Status legend used throughout: **[IMPL]** implemented in the prototype · **[SIM]** simulated/stubbed in the prototype · **[DESIGN]** proposed production behaviour, not built.
 
@@ -71,7 +71,7 @@ flowchart TB
 | Temporal policy selection | Revision in force at a site on a local date; overlap → conflict | The hardest rule to get right, and the root of EXC-110490 | [IMPL] |
 | Alert triage / closure policy | Close only demonstrably non-actionable alerts; everything else becomes a case | Keeps "closure" from becoming disguised release | [DESIGN]; the rules engine stays meanwhile |
 | Assessment kernel | Builds a reproducible assessment (evidence, conflicts, abstentions, manifest) for a given valid time and knowledge cutoff | This is the replayable unit Dr Rao evaluates | [IMPL] |
-| Case workflow | States, waits, leases, signatures, reopen | Human accountability lives here | [DESIGN] (`03` §4) |
+| Case workflow | States, waits, leases, signatures, reopen | Human accountability lives here | [DESIGN] ([detailed design](detailed-design.md) §4) |
 | Notification obligations | Independent clock from alert receipt; durable timers; acknowledgement-based completion | INC-2502; it must keep running when the case workflow is blocked | [IMPL] in-memory reference; [DESIGN] DB + outbox |
 | Precedent store | Prior signed cases **of the same tenant**, filtered before retrieval, and visible only as known at the cutoff | INC-2512; Cl.22 | [IMPL] lane history with knowledge gate; [DESIGN] search |
 | Evidence package | Hashed bundle per assessment and per signature; WORM retention for 7 years | Board #3 | [IMPL] export/verify; [DESIGN] WORM |
@@ -116,7 +116,7 @@ sequenceDiagram
 
 Waiting on carrier data, lab results or document control **never pauses** a notification clock. No source in the pack permits pausing.
 
-## 5. Versioning and delivery (summary; detail in `03` §7)
+## 5. Versioning and delivery (summary; detail in [detailed design](detailed-design.md) §7)
 
 Everything that can change a conclusion is versioned and recorded in each assessment's `manifest`: code fingerprint, ruleset, config hashes (scope rules, lexicon, regimes, bulletins), source record versions, mapping assertions, and model route/version/parameters when used. Every behaviour-affecting change runs a **historical replay per tenant** and produces a diff report of assessments whose status or findings change. QA approves the report; the change then goes to shadow and canary. INC-2411 (31 tenants changed silently) cannot happen when the change must name the tenants whose replay diffs are non-empty.
 
@@ -154,7 +154,7 @@ erDiagram
 
 ## 8. Diagrams for lifecycles
 
-See `03_detailed_design_lld.md` §4 (case lifecycle) and §5 (notification lifecycle).
+See [detailed design](detailed-design.md) §4 (case lifecycle) and §5 (notification lifecycle).
 
 ## 9. Cost and sizing (tab 13; prices from the procurement list `13!R33–38`)
 
