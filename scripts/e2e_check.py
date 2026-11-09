@@ -47,9 +47,7 @@ for p in (LOG, RES, ART):
     p.mkdir(parents=True, exist_ok=True)
 
 if SYNTHETIC:
-    sys.path.insert(0, str(ROOT / "tests"))
-    from synthetic_workbook import build  # noqa: E402
-    WB = build(ART / "synthetic_workbook.xlsx")
+    WB = ART / "synthetic_workbook.xlsx"          # built after install, with the fresh environment's openpyxl
 else:
     WB = Path(args[0] if args else "data/KCCS_Sentinel_Reference_Data_Pack.xlsx")
     if not WB.is_file():
@@ -108,6 +106,11 @@ run([VPY, "-m", "pip", "install", "-q", "--upgrade", "pip"], "01_install.log")
 record("E1", "Fresh install (pip install -e .[dev])", 0, run([VPY, "-m", "pip", "install", "-e", ".[dev]"], "01_install.log").returncode)
 (EV / "pip_freeze.txt").write_text(run([VPY, "-m", "pip", "freeze", "--exclude-editable"], "01_install.log").stdout, encoding="utf-8")
 vpy_version = run([VPY, "--version"], "01_install.log").stdout.strip()
+if SYNTHETIC:
+    run([VPY, "-c", "import sys; sys.path.insert(0, 'tests'); from synthetic_workbook import build; build(sys.argv[1])", WB],
+        "01_install.log")
+    if not WB.is_file():
+        sys.exit(f"Could not build the synthetic workbook; see {LOG / '01_install.log'}")
 (EV / "environment.txt").write_text(
     f"date_utc: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}\n"
     f"git_commit: {git.stdout.strip() or 'n/a'}\n"
