@@ -11,7 +11,7 @@ if [ ! -f "$WB" ]; then
   echo "Workbook not found at $WB. Copy KCCS_Sentinel_Reference_Data_Pack.xlsx into data/ (see README)." >&2
   exit 1
 fi
-rm -rf "$EV" artifacts/e2e && mkdir -p "$LOG" "$EV/results" artifacts/e2e
+rm -rf "$EV/logs" "$EV/results" "$EV"/*.txt artifacts/e2e && mkdir -p "$LOG" "$EV/results" artifacts/e2e   # keeps E2E_EVIDENCE.md
 RESULTS="$EV/results/checks.tsv"
 printf 'id\tcheck\texpected\tobserved\tresult\n' > "$RESULTS"
 FAIL=0

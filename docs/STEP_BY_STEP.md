@@ -66,7 +66,7 @@ kccs-evidence demo --workbook data/KCCS_Sentinel_Reference_Data_Pack.xlsx --out-
 assessments stored: 841; outputs in artifacts
 ```
 
-*Shortcut:* `scripts/run_all.sh` performs Steps 3–5 in one go and saves the test output to `artifacts/test_output.txt`.
+*Shortcut:* `scripts/run_all.sh` performs Steps 3–5 in one go and saves the test output to `artifacts/test_output.txt`. To run every check in this guide automatically and record the evidence, use `scripts/e2e_check.sh` instead. It writes a pass/fail table and full logs to `evidence/`; the recorded run is in [`evidence/E2E_EVIDENCE.md`](../evidence/E2E_EVIDENCE.md).
 
 ## Step 6: Look at the brief's own case (EXC-107133)
 

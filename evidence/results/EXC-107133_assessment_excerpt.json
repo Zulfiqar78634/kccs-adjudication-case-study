@@ -1,0 +1,215 @@
+{
+  "assessment_id": "ASM-669e9e1d77c3ae0b6a6c75d9",
+  "disposition_evidence_status": "ABSTAIN_BLOCKING_EVIDENCE_GAPS",
+  "is_disposition": false,
+  "blocking_reasons": [
+    "SOP_REVISION_OVERLAP",
+    "STABILITY_MASTER_VS_STUDY_CONFLICT",
+    "STABILITY_REFERENCED_STUDY_INADMISSIBLE",
+    "TEMPERATURE_SERIES_NOT_AVAILABLE"
+  ],
+  "time_semantics": {
+    "valid_at": "2026-07-28T06:14:00Z",
+    "alert_received_at": "2026-07-28T06:31:00Z",
+    "knowledge_cutoff": "2026-07-28T06:31:00Z",
+    "knowledge": {
+      "mode": "RECONSTRUCTED",
+      "cutoff_utc": "2026-07-28T06:31:00Z",
+      "cutoff_spec": "alert",
+      "store_cutoff_utc": "2026-09-14T00:00:00Z",
+      "basis": "Evidence is the ingested snapshot, restricted by every knowledge date the pack provides (alias confirmed_on, bulletin dates, human mapping recorded_at, precedent signature times). The pack carries no recorded-time history for SOP/stability/master rows, so this is a retrospective reconstruction ('what do we conclude now about then'), not proof of what was known then."
+    },
+    "policy_date_convention": "date-only effective dates as half-open [from, to) local calendar dates at the governed site"
+  },
+  "required_human_actions": [
+    {
+      "action": "Document control to confirm which revision governed on the excursion date",
+      "because": "SOP_REVISION_OVERLAP",
+      "severity": "BLOCKING"
+    },
+    {
+      "action": "Identify the study for this presentation",
+      "because": "STABILITY_REFERENCED_STUDY_INADMISSIBLE",
+      "severity": "BLOCKING"
+    },
+    {
+      "action": "QA to confirm the study and correct the product-master reference",
+      "because": "STABILITY_UNREFERENCED_CANDIDATE",
+      "severity": "REVIEW"
+    },
+    {
+      "action": "QA to decide which governs and correct the other",
+      "because": "STABILITY_MASTER_VS_STUDY_CONFLICT",
+      "severity": "BLOCKING"
+    },
+    {
+      "action": "Snapshot the raw series from the telemetry source into the evidence store",
+      "because": "TEMPERATURE_SERIES_NOT_AVAILABLE",
+      "severity": "BLOCKING"
+    },
+    {
+      "action": "Obtain batch excursion history before relying on a cumulative/once-only allowance",
+      "because": "BATCH_EXPOSURE_HISTORY_UNAVAILABLE",
+      "severity": "REVIEW"
+    },
+    {
+      "action": "Determine notifiability before 2026-08-12T06:31:00Z",
+      "because": "NOTIFICATION_DETERMINATION_DUE",
+      "severity": "REVIEW"
+    },
+    {
+      "action": "Sign or decline the disposition: Site QA",
+      "because": "DISPOSITION_IS_A_HUMAN_DECISION",
+      "severity": "REQUIRED"
+    }
+  ],
+  "notification_track": {
+    "clock_start_utc": "2026-07-28T06:31:00Z",
+    "clock_basis": "alert_ts_utc: when the reading reached Sentinel (00_README!R43)",
+    "independent_of_disposition": true,
+    "paused_by_evidence_waits": false,
+    "notifiability": "UNDETERMINED: a human determination is required; the kernel does not decide it",
+    "submission_status": "NOT_VISIBLE_TO_KERNEL",
+    "regime": {
+      "kind": "ELAPSED_HOURS",
+      "hours": 360,
+      "status": "OBSERVED",
+      "applicability": "India, notifiable products only",
+      "source": "13_Volume_And_Cost!R22; 01 reg_window_hours=360"
+    },
+    "status": "DEADLINE_COMPUTED",
+    "due_at_utc": "2026-08-12T06:31:00Z"
+  },
+  "disposition_authority": {
+    "who_signs": "Site QA",
+    "dual_signature_required": false,
+    "output_language": "English",
+    "data_residency": "No clause",
+    "third_party_model_apis": "Permitted",
+    "source": "12_Tenant_Constraints"
+  },
+  "entities": {
+    "product": {
+      "input_value": "08901234500035",
+      "status": "RESOLVED",
+      "resolved_id": "02_Product_Master!R57",
+      "basis": "EXACT_GTIN"
+    },
+    "origin": {
+      "input_value": "Bhiwandi Hub",
+      "status": "RESOLVED",
+      "resolved_id": "BOM-NX-04",
+      "basis": "REGISTRY_SITE_CODE"
+    },
+    "destination": {
+      "input_value": "Kundli Pharma Store",
+      "status": "RESOLVED",
+      "resolved_id": "DEL-CS-07",
+      "basis": "REGISTRY_SITE_CODE"
+    },
+    "carrier": {
+      "input_value": "Tapti Exp Cargo",
+      "status": "RESOLVED",
+      "resolved_id": "CNT-2021-0245",
+      "basis": "CONTRACT_NAME_MATCH"
+    }
+  },
+  "sop_origin": [
+    {
+      "doc_id": "SOP-KAV-9392",
+      "status": "CONFLICT_OVERLAPPING_REVISIONS",
+      "in_force": [
+        "Rev 02",
+        "Rev 03"
+      ],
+      "dates_evaluated": [
+        "2026-07-28"
+      ],
+      "date_basis": "site timezone Asia/Kolkata"
+    }
+  ],
+  "stability": {
+    "status": "CANDIDATE_ONLY",
+    "referenced": {
+      "study_ref": "STB-3584",
+      "admissible": false,
+      "rejection_reasons": [
+        "presentation mismatch: product ['PEN'] vs study ['VIAL']",
+        "partially readable (Partial — scan quality); requires human verification",
+        "study type 'Accelerated' does not establish an excursion limit"
+      ]
+    },
+    "candidates": [
+      {
+        "study_ref": "STB-2738",
+        "admissible": true,
+        "rejection_reasons": []
+      },
+      {
+        "study_ref": "STB-4400",
+        "admissible": false,
+        "rejection_reasons": [
+          "unreadable (N — scan of scan)"
+        ]
+      },
+      {
+        "study_ref": "STB-3312",
+        "admissible": false,
+        "rejection_reasons": [
+          "presentation mismatch: product ['PEN'] vs study ['VIAL']"
+        ]
+      }
+    ]
+  },
+  "reviewer_aid": [
+    {
+      "statement": "Against STB-2738 limit 'One excursion, up to 6 h below 15 °C': WITHIN_STATED_LIMIT_FOR_THIS_EVENT_ONLY",
+      "reported": {
+        "max_c": 11.2,
+        "min_c": 5.4,
+        "duration_min": 15
+      },
+      "firmware_band_c": null,
+      "unverifiable_conditions": [
+        "'once only' requires the batch's full excursion history (not in pack)"
+      ]
+    },
+    {
+      "statement": "Against product_master limit 'Cumulative 72 h above 8 °C permitted across shelf life': CUMULATIVE_UNVERIFIABLE",
+      "reported": {
+        "max_c": 11.2,
+        "min_c": 5.4,
+        "duration_min": 15
+      },
+      "firmware_band_c": null,
+      "unverifiable_conditions": [
+        "lifetime exposure above 8.0 °C for this batch is unknown; this event alone contributes up to 15 min of 72.0 h"
+      ]
+    }
+  ],
+  "manifest": {
+    "kernel_version": "0.1.0",
+    "ruleset_version": "evidence-rules/0.1.0",
+    "code_sha256": "749d386c7741c8a8321ac7efa8fc08b9e9b5e36b5c6ef735e35b7de36d601559",
+    "config": {
+      "sop_scope_rules.json": {
+        "version": "1.0.0",
+        "sha256": "69a74f8e0889526e6c5dc1724f71d69b7b579c2d0e41764ab028f7be8322c2d6"
+      },
+      "reference_facts.json": {
+        "version": "1.0.0",
+        "sha256": "881915eff09bf453a0bd9c795c7c622f826750bd1c719f9ad11f5efc6a4593f1"
+      }
+    },
+    "model": {
+      "route": "NONE",
+      "reason": "deterministic kernel; no language model or embedding invoked"
+    },
+    "stubs": {
+      "telemetry_archive": "NOT_AVAILABLE",
+      "document_content_store": "NOT_AVAILABLE",
+      "batch_exposure_history": "NOT_AVAILABLE",
+      "regulator_gateway": "NOT_INVOKED"
+    }
+  }
+}

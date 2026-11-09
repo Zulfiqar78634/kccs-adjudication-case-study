@@ -13,3 +13,4 @@ data/*.xlsx
 data/*.xls
 artifacts/
 submission/
+.venv-e2e/

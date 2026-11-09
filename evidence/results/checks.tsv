@@ -1,0 +1,26 @@
+id	check	expected	observed	result
+E1	Fresh install (pip install -e .[dev])	0	0	PASS
+E2	Test suite exit code	0	0	PASS
+E3	Tests passed	76 passed	76 passed	PASS
+E4	Workbook inspection report written	0	0	PASS
+E5	Full demo exit code	0	0	PASS
+E6	Workbook rows ingested	1413	1413	PASS
+E7	Re-ingest is idempotent (new records)	0	0	PASS
+E8	Cross-tenant read denied in demo	True	True	PASS
+E9	Correction leaves original assessment byte-identical	True	True	PASS
+E10	At-alert replay after correction reproduces original ID	True	True	PASS
+E11	Assessments stored	841	841	PASS
+E12	All demo evidence packages verify	True	True	PASS
+E13	EXC-107133 abstains (no disposition)	ABSTAIN_BLOCKING_EVIDENCE_GAPS False	ABSTAIN_BLOCKING_EVIDENCE_GAPS False	PASS
+E14	EXC-107133 product resolved within T-KAVERI	02_Product_Master!R57	02_Product_Master!R57	PASS
+E15	EXC-107133 SOP overlap detected	SOP-KAV-9392 CONFLICT_OVERLAPPING_REVISIONS ['Rev 02', 'Rev 03']	SOP-KAV-9392 CONFLICT_OVERLAPPING_REVISIONS ['Rev 02', 'Rev 03']	PASS
+E16	EXC-107133 wrong-presentation study rejected	STB-3584 False	STB-3584 False	PASS
+E17	EXC-107133 pen study offered as candidate	True	True	PASS
+E18	EXC-107133 notification deadline from alert receipt	2026-08-12T06:31:00Z	2026-08-12T06:31:00Z	PASS
+E19	Assessment ID reproducible across runs	ASM-669e9e1d77c3ae0b6a6c75d9	ASM-669e9e1d77c3ae0b6a6c75d9	PASS
+E20	Later knowledge cutoff gives a different assessment	True	True	PASS
+E21	CLI cross-tenant read refused (exit code)	3	3	PASS
+E22	Exported package verifies	0	0	PASS
+E23	Other tenant cannot export the package (exit code)	3	3	PASS
+E24	Tampered package rejected (exit code)	2	2	PASS
+E25	CLI re-ingest adds nothing	"new_records": 0	"new_records": 0	PASS
