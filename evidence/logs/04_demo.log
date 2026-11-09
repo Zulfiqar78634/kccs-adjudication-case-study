@@ -1,3 +1,4 @@
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli demo --workbook data/KCCS_Sentinel_Reference_Data_Pack.xlsx --out-dir artifacts/e2e --now 2026-11-08T12:00:00Z
 {
  "ingest": {
   "new_records": 1413,
@@ -16,12 +17,12 @@
  "label": "SIMULATED correction (not a real Kestrel change)",
  "record": "02_Product_Master/R57",
  "new_source_version": 2,
- "original_assessment": "ASM-b920c8d03004c712c883fb4a",
- "original_payload_sha256_before": "a96adc00931f43c2b4f8255647d10ff619e5568aac83cb34cc5b7446cbc1eac5",
- "original_payload_sha256_after": "a96adc00931f43c2b4f8255647d10ff619e5568aac83cb34cc5b7446cbc1eac5",
+ "original_assessment": "ASM-42fed7e003e39830f09bf75e",
+ "original_payload_sha256_before": "73712d1218079292cd678ebb1b6bb89a830430689139d8c6d4e61ac4b4ad27f3",
+ "original_payload_sha256_after": "73712d1218079292cd678ebb1b6bb89a830430689139d8c6d4e61ac4b4ad27f3",
  "original_unchanged": true,
- "new_assessment": "ASM-05d9c98a6e382a6d3d50d54b",
- "supersedes": "ASM-e301f0da23e6da659f419dd6",
+ "new_assessment": "ASM-747cc79b92bcc80c806713ca",
+ "supersedes": "ASM-fffe3ad0b3aaab419e16e577",
  "change": {
   "added_findings": [],
   "removed_findings": [
@@ -41,3 +42,5 @@
  "replay_at_alert_after_correction_same_id": true
 }
 assessments stored: 841; outputs in artifacts/e2e
+[exit 0]
+

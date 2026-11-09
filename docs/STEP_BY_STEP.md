@@ -117,8 +117,8 @@ kccs-evidence assess --db artifacts/my.sqlite --tenant T-KAVERI --event EXC-1071
 
 **Expect:**
 ```
-ASM-b920c8d03004c712c883fb4a status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
-ASM-e301f0da23e6da659f419dd6 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-42fed7e003e39830f09bf75e status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-fffe3ad0b3aaab419e16e577 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
 ```
 
 The first ID is identical on every machine, Python version and run. The ID is a fingerprint of the evidence, the knowledge cutoff and the exact code and rule versions, so the same inputs always give the same ID. Any change to the code or rules gives a different ID by design.
@@ -140,22 +140,22 @@ echo "exit code: $LASTEXITCODE"
 ## Step 9: Export an evidence package and prove it cannot be altered
 
 ```bash
-kccs-evidence export-package --db artifacts/my.sqlite --assessment-id ASM-b920c8d03004c712c883fb4a \
+kccs-evidence export-package --db artifacts/my.sqlite --assessment-id ASM-42fed7e003e39830f09bf75e \
     --tenant-scope T-KAVERI --out-dir artifacts/my_packages
-kccs-evidence verify-package artifacts/my_packages/ASM-b920c8d03004c712c883fb4a
+kccs-evidence verify-package artifacts/my_packages/ASM-42fed7e003e39830f09bf75e
 ```
 
 In PowerShell, put the first command on one line (drop the `\`). **Expect:** `"ok": true`. Now change the package and verify again:
 
 ```bash
-sed -i 's/ABSTAIN_BLOCKING_EVIDENCE_GAPS/READY_FOR_QA_REVIEW/' artifacts/my_packages/ASM-b920c8d03004c712c883fb4a/assessment.json
-kccs-evidence verify-package artifacts/my_packages/ASM-b920c8d03004c712c883fb4a
+sed -i 's/ABSTAIN_BLOCKING_EVIDENCE_GAPS/READY_FOR_QA_REVIEW/' artifacts/my_packages/ASM-42fed7e003e39830f09bf75e/assessment.json
+kccs-evidence verify-package artifacts/my_packages/ASM-42fed7e003e39830f09bf75e
 ```
 
 ```powershell
-$f = "artifacts\my_packages\ASM-b920c8d03004c712c883fb4a\assessment.json"
+$f = "artifacts\my_packages\ASM-42fed7e003e39830f09bf75e\assessment.json"
 [IO.File]::WriteAllText($f, [IO.File]::ReadAllText($f).Replace("ABSTAIN_BLOCKING_EVIDENCE_GAPS", "READY_FOR_QA_REVIEW"))
-kccs-evidence verify-package artifacts\my_packages\ASM-b920c8d03004c712c883fb4a
+kccs-evidence verify-package artifacts\my_packages\ASM-42fed7e003e39830f09bf75e
 ```
 
 **Expect:** `"ok": false` and `"problems": ["hash mismatch assessment.json"]`, with exit code 2. (On macOS, use `sed -i ''`.)

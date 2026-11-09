@@ -1,1 +1,4 @@
+$ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli inspect --workbook data/KCCS_Sentinel_Reference_Data_Pack.xlsx --out-dir artifacts/e2e/data_quality
 wrote artifacts/e2e/data_quality/report.md and artifacts/e2e/data_quality/report.json
+[exit 0]
+

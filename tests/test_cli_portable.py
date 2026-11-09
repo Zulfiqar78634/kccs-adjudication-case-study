@@ -55,7 +55,7 @@ def test_full_cli_flow_on_this_platform(env_dir):
     assert a["notification_track"]["due_at_utc"] == "2026-07-30T06:30:00Z"           # India 360 h from alert receipt
     aid = a["assessment_id"]
     if os.environ.get("KCCS_ID_OUT"):                                                     # CI compares this across OSes
-        Path(os.environ["KCCS_ID_OUT"]).write_text(aid + "\n" + a["manifest"]["code_sha256"] + "\n", encoding="utf-8")
+        Path(os.environ["KCCS_ID_OUT"]).write_text(aid + "\n" + a["manifest"]["code_sha256"] + "\n", encoding="utf-8", newline="\n")
 
     p = cli("assess", "--db", db, "--tenant", "T-KAVERI", "--event", "EXC-900001", "--knowledge-cutoff", "alert", "--now", NOW, cwd=d)
     assert json.loads(p.stdout.decode("utf-8"))["assessment_id"] == aid                 # reproducible

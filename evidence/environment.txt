@@ -1,6 +1,7 @@
-date_utc: 2026-11-09T05:17:46Z
-git_commit: 4520737a998702178fa6db4780bc3ff7b9cb7761
+date_utc: 2026-11-09T05:33:16Z
+git_commit: 6733ca4c33eb31e7ee15f840f6b72662cc312cff
 python: Python 3.12.3
-os: Linux 7.2.14
+os: Linux 7.2.14 (Linux-7.2.14-x86_64-with-glibc2.39)
+workbook: KCCS_Sentinel_Reference_Data_Pack.xlsx
 workbook_sha256: 9fe3fad7d0f77a5fbdaa0f8ce70336a911a8725d38d057b9d9d777c06ea57db3
 workbook_bytes: 221860
