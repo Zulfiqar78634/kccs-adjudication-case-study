@@ -1,4 +1,4 @@
-# 05 — Validation and operations
+# Deliverable 3: Validation, today and over time
 
 ## 1. How we know it works today
 

@@ -182,8 +182,11 @@ class Store:
         return self.db.execute("SELECT * FROM assessment WHERE assessment_id=?", (assessment_id,)).fetchone()
 
     def assessments_for_event(self, tenant: str, event_id: str) -> list[dict[str, Any]]:
+        """Stored assessments of one event, oldest first."""
+        # Ties on first_stored_at (e.g. a fixed demo clock) fall back to insertion order (rowid), not to the
+        # assessment_id hash, which changes with the code fingerprint and would make "supersedes" arbitrary.
         return [dict(r) for r in self.db.execute(
-            "SELECT * FROM assessment WHERE tenant_code=? AND event_id=? ORDER BY first_stored_at, assessment_id",
+            "SELECT * FROM assessment WHERE tenant_code=? AND event_id=? ORDER BY first_stored_at, rowid",
             (tenant, event_id))]
 
     # ---------------- audit ----------------
