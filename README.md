@@ -54,6 +54,10 @@ scripts/e2e_check.sh
 
 It installs everything, runs all the checks, prints PASS or FAIL for each one, and writes the evidence to `evidence/`. **Expect the last line to read `checks: 25, failed: 0`.**
 
+- **macOS:** the bundled `python3` is often 3.9. The script automatically uses a newer one if you have it (`python3.13`, `python3.12` or `python3.11`). If you don't, it stops with a clear message; install one with `brew install python@3.12` and re-run. To choose an interpreter explicitly: `PYTHON=/path/to/python3.12 scripts/e2e_check.sh`.
+- **Windows:** run it from WSL or Git Bash, or follow the individual commands in [docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md).
+- **Tested on:** Linux with Python 3.11, 3.12 and 3.13 (see [evidence/](evidence/E2E_EVIDENCE.md)). Not tested on macOS or Windows machines; the scripts use only portable shell commands.
+
 For each command on its own, with the output to expect at every step, see **[docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md)**.
 
 ### Step 6: Read the code (optional)

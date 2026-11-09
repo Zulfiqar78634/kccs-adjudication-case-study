@@ -141,41 +141,35 @@ The full list is in `docs/04`; the generated report is `artifacts/data_quality/r
 
 ## 5. Verification actually executed
 
-All of the following ran in this session's sandbox (Python 3.12.3):
+The full end-to-end run is recorded in [`evidence/E2E_EVIDENCE.md`](evidence/E2E_EVIDENCE.md), with every log. Run `scripts/e2e_check.sh` to repeat it. In summary:
 
-- `pytest`: **76 passed**. The output is regenerated to `artifacts/test_output.txt` by `scripts/run_all.sh`.
-- `kccs-evidence demo`: ingested 1,413 source records (re-ingest: 0 new, so idempotent), and built 841 assessments in two knowledge views plus one post-correction view.
-- **Evidence packages:** 6 exported and re-verified for the selected real cases.
-- **Isolation:** cross-tenant access was denied with exit code 3.
-- **Clean install:** `scripts/run_all.sh` passed in a fresh clone with a fresh virtualenv (see the commit log).
+- **Tests:** all 76 pass. Supported Python versions are 3.11 to 3.13; the recorded run used 3.12.
+- **Demo:** it loads the workbook's 1,413 source records. Loading them again adds nothing, so repeat runs are safe. It builds 841 assessments: two knowledge views of each alert, plus one after a correction.
+- **Evidence packages:** all are exported and re-verified. An edited package is rejected.
+- **Isolation:** cross-tenant reads and exports are refused (exit code 3).
+- **Clean install:** a fresh clone with a fresh virtual environment passes 25 of 25 checks.
 
 Not executed: anything in the "design only" column, load and failover tests, and RPO/RTO drills. All thresholds and costs are proposals or assumptions.
 
-## 6. Known limitations and what I still need to do before sending
+## 6. Known limitations
 
-**Limitations:**
-- The pack lacks the inputs a real "ready" verdict needs (series, SOP content, batch history), so the demo shows abstention quality, not throughput.
-- Several interpretations need QA and Regulatory Affairs sign-off: scope mapping, presentation lexicon, regimes and bulletin semantics.
-- The product-alias quarantine costs coverage by design.
-
-**Before sending:**
-- [ ] Fill in time spent (`docs/06` §3 and the email).
-- [ ] Review and own each position.
-- [ ] Attach or describe the session export.
-- [ ] Send as a reply to Sangeeta's 4 Nov instructions email, cc sudhanshu@fourkites.com (brief §10).
+- The pack lacks the inputs a real "ready" verdict needs (temperature series, SOP content, batch history), so the demo shows the quality of abstention, not throughput.
+- Several interpretations need QA and Regulatory Affairs sign-off before production use: scope mapping, presentation lexicon, notification regimes and bulletin semantics (see the fact-versus-interpretation table in §3).
+- The product-alias quarantine costs coverage by design: 81 alias-string references stay unresolved.
+- Case workflow, regional deployment, source connectors and monitoring are designed (`docs/02`, `docs/03`, `docs/05`) but not built.
 
 ## 7. How to run and where to look
 
 ```bash
-cp /path/to/KCCS_Sentinel_Reference_Data_Pack.xlsx data/
-scripts/run_all.sh
+mkdir -p data && cp /path/to/KCCS_Sentinel_Reference_Data_Pack.xlsx data/
+scripts/e2e_check.sh        # expect the last line: checks: 25, failed: 0
 ```
 
 Then read, in order:
 1. `docs/01_where_we_land.md`
-2. `artifacts/cases/EXC-107133_at_alert.json`
-3. `artifacts/evaluation/summary.md`
+2. `evidence/results/EXC-107133_assessment_excerpt.json` (or `artifacts/e2e/cases/EXC-107133_at_alert.json` after a run)
+3. `evidence/results/evaluation_summary.md`
 4. `docs/02`–`05`
 5. `docs/06_working_log.md`
 
-`docs/07_review_walkthrough.md` is the 20-minute walkthrough, with five hard questions and a rehearsed change response.
+`docs/STEP_BY_STEP.md` runs each command on its own, with the expected output. `docs/07_review_walkthrough.md` is a 20-minute walkthrough, with five hard questions and a rehearsed change response.

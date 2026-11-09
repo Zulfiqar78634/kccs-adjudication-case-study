@@ -7,7 +7,11 @@ if [ ! -f "$WB" ]; then
   echo "Workbook not found at $WB. Copy KCCS_Sentinel_Reference_Data_Pack.xlsx into data/ (see README)." >&2
   exit 1
 fi
-PY="${PYTHON:-python3}"
+. scripts/_python.sh
+# Rebuild the environment if it was created with an unsupported Python.
+if [ -d .venv ] && ! .venv/bin/python -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' 2>/dev/null; then
+  rm -rf .venv
+fi
 [ -d .venv ] || "$PY" -m venv .venv
 .venv/bin/python -m pip install -q --upgrade pip
 .venv/bin/python -m pip install -q -e ".[dev]"

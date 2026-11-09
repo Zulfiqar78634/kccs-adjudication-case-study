@@ -75,7 +75,6 @@ Four concepts are kept separate throughout: **(a)** non-actionable alert closure
 | `03` timezone wrong for two sites (`00!R31`) | Only MEM-CS-02 (Chicago, not New York) is certainly wrong | Flag MEM confirmed, IND suspect; evaluate all plausible dates near boundaries | Wrong revision | Data Services |
 | EXC-110448 reasoning "real max probably inside spec" | Under-reporting means the true temperature is **higher**. This was a cold excursion (min 0 °C); even +1.8 °C leaves 1.8 < 2 °C | Firmware treated as an interval [0, +1.8]; still a cold excursion | Prior outcomes not ground truth | QA (review candidate) |
 | `13!R25–26` ceilings | $0.06 × 11,400 + $1.10 × 2,050 = $684 + $2,255 = **$2,939** ≈ the $3,000 CFO figure | Treat as additive sub-budgets | If overlapping, budget is $2,255 | CFO |
-| Submission recipient | The brief (§10) says to send to **sudhanshu@fourkites.com**; the instructions email of 4 Nov 2026 came from Sangeeta S and asks for the copy to be shared with her | Reply to Sangeeta's email and cc Sudhanshu | Wrong recipient | Candidate |
 
 ## 6. Phased rollout
 

@@ -14,7 +14,7 @@ The work is transactional, audit-heavy and moderate in volume: about 11,400 aler
 A thin **global control plane** holds only non-tenant data: the tenant→cell routing table, code/config release metadata and the vendor bulletin feed. No tenant evidence crosses cells.
 
 ```mermaid
-flowchart LR
+flowchart TB
   subgraph Sources
     S1[SYS-01 ThermaTrace REST]:::ext
     S2[SYS-02 CryoSense MQTT]:::ext
@@ -90,12 +90,12 @@ sequenceDiagram
   participant CASE as Case workflow
   participant QA as QA reviewer
   SRC->>ING: alert reading (at-least-once)
-  ING->>ING: dedupe by (source, source_msg_id); store source version
+  ING->>ING: dedupe by (source, source_msg_id), store source version
   ING->>OBL: register obligation(tenant, event, alert_received_at) [same transaction, outbox]
   ING->>ASM: assess(event, valid_at=excursion_start, cutoff=now)
   ASM->>TV: open view(principal, tenant) -- denied & audited if not authorised
   TV-->>ASM: tenant records as known at cutoff (SQL-filtered)
-  ASM->>ASM: resolve product/sites/carrier; select SOP; check stability; telemetry; firmware
+  ASM->>ASM: resolve product, sites, carrier, select SOP, check stability, telemetry, firmware
   ASM-->>CASE: assessment (id = content hash) READY_FOR_QA_REVIEW or ABSTAIN + human actions
   CASE->>QA: work item ordered by obligation deadline, then age
   QA->>CASE: resolve conflicts / approve mappings (new versions) -> reassess (new id, supersedes)

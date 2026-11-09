@@ -34,7 +34,7 @@ cp /path/to/KCCS_Sentinel_Reference_Data_Pack.xlsx data/
 ## Step 3: Install
 
 ```bash
-python3 -m venv .venv
+python3 -m venv .venv            # if `python3 --version` is older than 3.11 (common on macOS), use python3.12 or python3.13 here
 . .venv/bin/activate            # Windows PowerShell: .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 ```
@@ -159,6 +159,8 @@ These figures come from a stratified evidence pack, not a random sample. They ar
 | `Workbook not found at data/…` | Put the file in `data/` with exactly this name: `KCCS_Sentinel_Reference_Data_Pack.xlsx` |
 | `45 skipped` in Step 4 | Same cause: the workbook is missing from `data/` |
 | `error: externally-managed-environment` | Activate the virtual environment first (Step 3) |
+| `requires a different Python` or `Python 3.11 or newer is required` | Your `python3` is too old. Install 3.11+ (macOS: `brew install python@3.12`) and recreate the environment with it (`rm -rf .venv && python3.12 -m venv .venv`) |
+| `NOT FOUND: … not found for tenant …` | The database has not been loaded yet (run `kccs-evidence ingest` first), or the event belongs to another customer |
 | `kccs-evidence: command not found` | Activate the virtual environment, or use `python -m kccs_evidence.cli …` instead |
 | `ZoneInfoNotFoundError` | Re-run `pip install -e ".[dev]"`, which installs `tzdata` |
 | Step 7 prints a different ID | Check that the workbook is the unmodified original (its SHA-256 starts with `9fe3fad7d0f77a5f`) and that the code is the version on `main` |
