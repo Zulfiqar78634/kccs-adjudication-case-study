@@ -84,4 +84,4 @@ jobs:
           for f in ids/*/assessment-id.txt; do echo "$(dirname "$f" | xargs basename): $(head -1 "$f")"; done
           n=$(cat ids/*/assessment-id.txt | sort -u | wc -l)
           echo "distinct lines (ID + code fingerprint): $n"
-          test "$n" -eq 2
+          test "$n" -eq 2 || { echo "::error::assessment IDs differ between machines"; exit 1; }

@@ -141,9 +141,9 @@ The full list is in `docs/04`; the generated report is `artifacts/data_quality/r
 
 ## 5. Verification actually executed
 
-The full end-to-end run is recorded in [`evidence/E2E_EVIDENCE.md`](evidence/E2E_EVIDENCE.md), with every log. Run `scripts/e2e_check.sh` to repeat it. In summary:
+The full end-to-end run is recorded in [`evidence/E2E_EVIDENCE.md`](evidence/E2E_EVIDENCE.md), with every log. Run `python scripts/e2e_check.py` (any OS) to repeat it. In summary:
 
-- **Tests:** all 76 pass. Supported Python versions are 3.11 to 3.13; the recorded run used 3.12.
+- **Tests:** all 78 pass. Supported: Python 3.11–3.13 on Windows, macOS and Linux, checked on every commit by the cross-platform workflow; the recorded real-workbook run used 3.12 on Linux.
 - **Demo:** it loads the workbook's 1,413 source records. Loading them again adds nothing, so repeat runs are safe. It builds 841 assessments: two knowledge views of each alert, plus one after a correction.
 - **Evidence packages:** all are exported and re-verified. An edited package is rejected.
 - **Isolation:** cross-tenant reads and exports are refused (exit code 3).
@@ -162,7 +162,7 @@ Not executed: anything in the "design only" column, load and failover tests, and
 
 ```bash
 mkdir -p data && cp /path/to/KCCS_Sentinel_Reference_Data_Pack.xlsx data/
-scripts/e2e_check.sh        # expect the last line: checks: 25, failed: 0
+python3 scripts/e2e_check.py   # Windows: py -3.12 scripts\e2e_check.py   -> expect: checks: 25, failed: 0
 ```
 
 Then read, in order:

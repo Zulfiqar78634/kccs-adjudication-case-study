@@ -43,20 +43,31 @@ The brief describes Priya spending 1 hour 50 minutes on this insulin alert. Open
 
 ### Step 5: Run it yourself (about 2 minutes)
 
-You need Python 3.11+ and the workbook `KCCS_Sentinel_Reference_Data_Pack.xlsx`. No API keys and no internet are needed after install.
+You need Python 3.11 or newer, git, and the workbook `KCCS_Sentinel_Reference_Data_Pack.xlsx`. No API keys and no internet are needed after install.
+
+**macOS / Linux**
 
 ```bash
 git clone https://github.com/Zulfiqar78634/kccs-adjudication-case-study.git
 cd kccs-adjudication-case-study
 mkdir -p data && cp /path/to/KCCS_Sentinel_Reference_Data_Pack.xlsx data/
-scripts/e2e_check.sh
+python3 scripts/e2e_check.py
 ```
 
-It installs everything, runs all the checks, prints PASS or FAIL for each one, and writes the evidence to `evidence/`. **Expect the last line to read `checks: 25, failed: 0`.**
+**Windows (PowerShell)**
 
-- **macOS:** the bundled `python3` is often 3.9. The script automatically uses a newer one if you have it (`python3.13`, `python3.12` or `python3.11`). If you don't, it stops with a clear message; install one with `brew install python@3.12` and re-run. To choose an interpreter explicitly: `PYTHON=/path/to/python3.12 scripts/e2e_check.sh`.
-- **Windows:** run it from WSL or Git Bash, or follow the individual commands in [docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md).
-- **Tested on:** Linux with Python 3.11, 3.12 and 3.13 (see [evidence/](evidence/E2E_EVIDENCE.md)). Not tested on macOS or Windows machines; the scripts use only portable shell commands.
+```powershell
+git clone https://github.com/Zulfiqar78634/kccs-adjudication-case-study.git
+cd kccs-adjudication-case-study
+mkdir data; copy C:\path\to\KCCS_Sentinel_Reference_Data_Pack.xlsx data\
+py -3.12 scripts\e2e_check.py        # or: python scripts\e2e_check.py
+```
+
+It creates its own Python environment, installs everything, runs all the checks, prints PASS or FAIL for each one, and writes the evidence to `evidence/`. **Expect the last line to start with `checks: 25, failed: 0`.**
+
+- **Python too old?** The script says so and stops. On macOS the bundled `python3` is often 3.9: use `python3.12` (or `brew install python@3.12`). On Windows, install from python.org or the Microsoft Store, then use `py -3.12`.
+- **No workbook to hand?** `scripts/e2e_check.py --synthetic` runs the same install and command-line checks on an invented workbook with the same layout.
+- **Tested on:** Windows, macOS and Linux with Python 3.11, 3.12 and 3.13, on every commit ([cross-platform workflow](.github/workflows/cross-platform.yml)). Those machines use the synthetic workbook, because the confidential one is never uploaded. The full run on the real workbook is recorded in [evidence/](evidence/E2E_EVIDENCE.md).
 
 For each command on its own, with the output to expect at every step, see **[docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md)**.
 
@@ -92,7 +103,7 @@ Each file does one job:
 
 ## Reference
 
-### What the 76 tests prove
+### What the 78 tests prove
 
 | Claim | Tests |
 |---|---|
@@ -105,6 +116,7 @@ Each file does one job:
 | It never guesses and never makes a disposition (checked on all 420 alerts); past outcomes are not used as inputs | `tests/test_assessment.py` |
 | Stability checks catch wrong product forms, unreadable studies and misleading folder paths | `tests/test_stability_and_signals.py` |
 | The notification clock starts at alert receipt, is not paused by waiting, refuses to guess "next business day", and keeps every alert during a 1,912-alert storm | `tests/test_obligations.py` |
+| It behaves identically on Windows, macOS and Linux: the full command-line flow on a synthetic workbook, byte-exact evidence packages, UTF-8 console output, and IDs unchanged by Windows line endings | `tests/test_cli_portable.py` |
 
 ### What is built, simulated, or design only
 
@@ -137,9 +149,9 @@ docs/01 … 07                  the written deliverables (see Step 2)
 docs/STEP_BY_STEP.md          run every command, with the expected output
 evidence/                     recorded end-to-end test run (25/25 passed) and its logs
 src/kccs_evidence/            the prototype (see Step 6)
-tests/                        76 automated tests
-scripts/e2e_check.sh          run every check and record the evidence
-scripts/run_all.sh            install, test and run the demo
+tests/                        78 automated tests (45 need the real workbook; 33 run anywhere)
+scripts/e2e_check.py          run every check and record the evidence (Windows, macOS, Linux)
+scripts/run_all.sh            macOS/Linux: install, test and run the demo
 ```
 
 The confidential workbook is not in this repository. Results produced on your machine go to `artifacts/`, which is also not committed.

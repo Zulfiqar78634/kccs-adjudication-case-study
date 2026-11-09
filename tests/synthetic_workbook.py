@@ -6,6 +6,9 @@ It deliberately includes an overlapping SOP revision, non-ASCII text ("°", "—
 """
 from __future__ import annotations
 
+import io
+import re
+import zipfile
 from pathlib import Path
 
 import openpyxl
@@ -98,6 +101,12 @@ KEY_VALUE = {
 
 
 def build(path: str | Path) -> Path:
+    """Write the workbook byte-identically on every OS and Python version.
+
+    openpyxl stamps the current time into the file, and zlib output can differ between platforms,
+    so the archive is rewritten with fixed timestamps and no compression. The workbook's hash feeds
+    every assessment ID, so this is what makes IDs comparable across machines in CI.
+    """
     path = Path(path)
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
@@ -108,5 +117,17 @@ def build(path: str | Path) -> Path:
         ws = wb.create_sheet(name)
         for row in (KEY_VALUE.get(name) or SHEETS[name]):
             ws.append(row)
-    wb.save(path)
+    buf = io.BytesIO()
+    wb.save(buf)
+    out = io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(buf.getvalue())) as src, zipfile.ZipFile(out, "w", zipfile.ZIP_STORED) as dst:
+        for name in sorted(src.namelist()):
+            data = src.read(name)
+            if name == "docProps/core.xml":
+                data = re.sub(rb"(<dcterms:(?:created|modified)[^>]*>)[^<]*(<)", rb"\g<1>2026-01-01T00:00:00Z\g<2>", data)
+            info = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+            info.external_attr = 0o600 << 16
+            info.create_system = 0
+            dst.writestr(info, data)
+    path.write_bytes(out.getvalue())
     return path
