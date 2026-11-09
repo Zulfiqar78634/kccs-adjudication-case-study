@@ -221,6 +221,17 @@ def main(argv=None):
     except TenantAccessDenied as exc:
         print(f"ACCESS DENIED: {exc}", file=sys.stderr)
         sys.exit(3)
+    except KeyError as exc:
+        msg = exc.args[0] if exc.args else exc
+        hint = ""
+        if getattr(args, "db", None):
+            hint = (f" (database: {args.db}. Load the workbook into it first with "
+                    f"`kccs-evidence ingest --workbook <file> --db {args.db}`.)")
+        print(f"NOT FOUND: {msg}{hint}", file=sys.stderr)
+        sys.exit(4)
+    except (FileNotFoundError, ValueError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        sys.exit(2)
 
 
 if __name__ == "__main__":

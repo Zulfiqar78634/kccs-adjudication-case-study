@@ -1,6 +1,6 @@
 # End-to-end test evidence
 
-**Result: 25 of 25 checks passed** on 9 November 2026 (04:36 UTC). The checks ran against the supplied workbook, in a fresh copy of the repository with a fresh Python environment.
+**Result: 25 of 25 checks passed** on 9 November 2026 (05:17 UTC). The checks ran against the supplied workbook, in a fresh copy of the repository with a fresh Python environment.
 
 The run was produced by `scripts/e2e_check.sh`. You can repeat it yourself:
 
@@ -15,12 +15,24 @@ It rebuilds this whole `evidence/` folder and exits with code 0 only if every ch
 
 | Item | Value |
 |---|---|
-| Code tested | commit `ef2884199f121bb9cc7859150f26a1f11e6096c9` (the submitted kernel plus this script) |
+| Code tested | commit `4520737a998702178fa6db4780bc3ff7b9cb7761` |
 | Workbook | `KCCS_Sentinel_Reference_Data_Pack.xlsx`, 221,860 bytes, SHA-256 `9fe3fad7d0f77a5fbdaa0f8ce70336a911a8725d38d057b9d9d777c06ea57db3` |
 | Environment | Python 3.12.3 on Linux; dependency versions in `pip_freeze.txt` |
 | Duration | about 23 seconds, including the fresh install |
 
 The workbook itself is **not** in this folder or the repository, because it is confidential. Only derived results are kept here.
+
+## Same result on every supported Python version
+
+The same script, on the same commit and workbook, each in its own fresh clone:
+
+| Python | Checks | Tests | EXC-107133 assessment ID |
+|---|---|---|---|
+| 3.11.14 | 25 / 25 passed | 76 passed | `ASM-b920c8d03004c712c883fb4a` |
+| 3.12.3 (logs in this folder) | 25 / 25 passed | 76 passed | `ASM-b920c8d03004c712c883fb4a` |
+| 3.13.11 | 25 / 25 passed | 76 passed | `ASM-b920c8d03004c712c883fb4a` |
+
+The identical ID across versions shows the results do not depend on the Python version. All runs were on Linux; macOS and Windows were not tested.
 
 ## Results
 
@@ -44,7 +56,7 @@ The workbook itself is **not** in this folder or the repository, because it is c
 | E16 | EXC-107133 wrong-presentation study rejected | STB-3584 not admissible | same | PASS |
 | E17 | EXC-107133 correct pen study offered as a candidate | STB-2738 admissible | same | PASS |
 | E18 | EXC-107133 notification deadline counted from alert receipt | 2026-08-12T06:31:00Z | same | PASS |
-| E19 | Assessment ID reproducible across separate runs | `ASM-669e9e1d77c3ae0b6a6c75d9` | same | PASS |
+| E19 | Assessment ID reproducible across separate runs | `ASM-b920c8d03004c712c883fb4a` | same | PASS |
 | E20 | Later knowledge cutoff produces a different assessment | different ID | different ID | PASS |
 | E21 | Command line: cross-tenant read refused | exit 3 | exit 3 | PASS |
 | E22 | Command line: exported package verifies | exit 0 | exit 0 | PASS |

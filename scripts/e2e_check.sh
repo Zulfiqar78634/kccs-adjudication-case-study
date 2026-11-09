@@ -21,10 +21,11 @@ record() {  # id, check, expected, observed
   printf '%-4s %-5s %s\n' "$1" "$res" "$2"
 }
 
-PY="${PYTHON:-python3}"
+. scripts/_python.sh
 { echo "date_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"; echo "git_commit: $(git rev-parse HEAD 2>/dev/null || echo n/a)"
   echo "python: $($PY --version 2>&1)"; echo "os: $(uname -sr)"
-  echo "workbook_sha256: $(sha256sum "$WB" | cut -d' ' -f1)"; echo "workbook_bytes: $(wc -c < "$WB")"; } > "$EV/environment.txt"
+  echo "workbook_sha256: $("$PY" -c 'import hashlib,sys; print(hashlib.sha256(open(sys.argv[1],"rb").read()).hexdigest())' "$WB")"
+  echo "workbook_bytes: $(wc -c < "$WB" | tr -d ' ')"; } > "$EV/environment.txt"
 
 # E1 fresh install
 rm -rf .venv-e2e && "$PY" -m venv .venv-e2e && . .venv-e2e/bin/activate

@@ -1,6 +1,6 @@
 ============================= test session starts ==============================
-platform linux -- Python 3.12.3, pytest-8.3.5, pluggy-1.7.0 -- /tmp/e2e3/.venv-e2e/bin/python
-rootdir: /tmp/e2e3
+platform linux -- Python 3.12.3, pytest-8.3.5, pluggy-1.7.0 -- /tmp/run3.12/.venv-e2e/bin/python
+rootdir: /tmp/run3.12
 configfile: pyproject.toml
 testpaths: tests
 collecting ... collected 76 items
@@ -82,4 +82,4 @@ tests/test_tenant_isolation.py::test_package_export_denied_for_other_tenant PASS
 tests/test_tenant_isolation.py::test_lane_history_never_includes_other_tenants PASSED [ 98%]
 tests/test_tenant_isolation.py::test_evaluation_only_sheets_not_reachable_from_tenant_view PASSED [100%]
 
-============================== 76 passed in 5.34s ==============================
+============================== 76 passed in 5.31s ==============================

@@ -1,9 +1,9 @@
 {"snapshot_id": "SNAP-9fe3fad7d0f77a5f", "file_sha256": "9fe3fad7d0f77a5fbdaa0f8ce70336a911a8725d38d057b9d9d777c06ea57db3", "recorded_at": "2026-09-14T00:00:00Z", "new_records": 1413, "new_versions": 0, "unchanged": 0}
-ASM-669e9e1d77c3ae0b6a6c75d9 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
-ASM-6d22f4e6e940e6bfbd8a0863 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-b920c8d03004c712c883fb4a status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-e301f0da23e6da659f419dd6 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
 ACCESS DENIED: cli-reviewer is not authorised for T-MERIDIAN
-{"package": "artifacts/e2e/cli_packages/ASM-669e9e1d77c3ae0b6a6c75d9", "ok": true, "problems": [], "package_digest": "f92b038398715c8463d515c6d6c5fe317caba7ebeb17d683a6104a7737c89d3e"}
-{"package": "artifacts/e2e/cli_packages/ASM-669e9e1d77c3ae0b6a6c75d9", "ok": true, "problems": [], "package_digest": "f92b038398715c8463d515c6d6c5fe317caba7ebeb17d683a6104a7737c89d3e"}
-ACCESS DENIED: cli-reviewer may not export ASM-669e9e1d77c3ae0b6a6c75d9
-{"package": "artifacts/e2e/cli_packages/ASM-669e9e1d77c3ae0b6a6c75d9", "ok": false, "problems": ["hash mismatch assessment.json"], "package_digest": "f92b038398715c8463d515c6d6c5fe317caba7ebeb17d683a6104a7737c89d3e"}
+{"package": "artifacts/e2e/cli_packages/ASM-b920c8d03004c712c883fb4a", "ok": true, "problems": [], "package_digest": "fcce2ae8040b41b7a9de5c182cf1089c1c6228c1cc6677c8ede0a8e2eccb8023"}
+{"package": "artifacts/e2e/cli_packages/ASM-b920c8d03004c712c883fb4a", "ok": true, "problems": [], "package_digest": "fcce2ae8040b41b7a9de5c182cf1089c1c6228c1cc6677c8ede0a8e2eccb8023"}
+ACCESS DENIED: cli-reviewer may not export ASM-b920c8d03004c712c883fb4a
+{"package": "artifacts/e2e/cli_packages/ASM-b920c8d03004c712c883fb4a", "ok": false, "problems": ["hash mismatch assessment.json"], "package_digest": "fcce2ae8040b41b7a9de5c182cf1089c1c6228c1cc6677c8ede0a8e2eccb8023"}
 {"snapshot_id": "SNAP-9fe3fad7d0f77a5f", "file_sha256": "9fe3fad7d0f77a5fbdaa0f8ce70336a911a8725d38d057b9d9d777c06ea57db3", "recorded_at": "2026-09-14T00:00:00Z", "new_records": 0, "new_versions": 0, "unchanged": 1413}

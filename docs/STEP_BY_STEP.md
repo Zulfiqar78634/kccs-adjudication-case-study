@@ -34,7 +34,7 @@ cp /path/to/KCCS_Sentinel_Reference_Data_Pack.xlsx data/
 ## Step 3: Install
 
 ```bash
-python3 -m venv .venv
+python3 -m venv .venv            # if `python3 --version` is older than 3.11 (common on macOS), use python3.12 or python3.13 here
 . .venv/bin/activate            # Windows PowerShell: .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 ```
@@ -96,11 +96,11 @@ kccs-evidence assess --db artifacts/my.sqlite --tenant T-KAVERI --event EXC-1071
 
 **Expect:**
 ```
-ASM-669e9e1d77c3ae0b6a6c75d9 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
-ASM-6d22f4e6e940e6bfbd8a0863 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-b920c8d03004c712c883fb4a status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-e301f0da23e6da659f419dd6 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
 ```
 
-The first ID is identical on every machine and every run. Same evidence and same cutoff give the same ID.
+The first ID is identical on every machine, Python version and run. The ID is a fingerprint of the evidence, the knowledge cutoff and the exact code and rule versions, so the same inputs always give the same ID. Any change to the code or rules gives a different ID by design.
 
 ## Step 8: Check customer separation
 
@@ -114,16 +114,16 @@ echo "exit code: $?"
 ## Step 9: Export an evidence package and prove it cannot be altered
 
 ```bash
-kccs-evidence export-package --db artifacts/my.sqlite --assessment-id ASM-669e9e1d77c3ae0b6a6c75d9 \
+kccs-evidence export-package --db artifacts/my.sqlite --assessment-id ASM-b920c8d03004c712c883fb4a \
     --tenant-scope T-KAVERI --out-dir artifacts/my_packages
-kccs-evidence verify-package artifacts/my_packages/ASM-669e9e1d77c3ae0b6a6c75d9
+kccs-evidence verify-package artifacts/my_packages/ASM-b920c8d03004c712c883fb4a
 ```
 
 **Expect:** `"ok": true`. Now change the package and verify again:
 
 ```bash
-sed -i 's/ABSTAIN_BLOCKING_EVIDENCE_GAPS/READY_FOR_QA_REVIEW/' artifacts/my_packages/ASM-669e9e1d77c3ae0b6a6c75d9/assessment.json
-kccs-evidence verify-package artifacts/my_packages/ASM-669e9e1d77c3ae0b6a6c75d9
+sed -i 's/ABSTAIN_BLOCKING_EVIDENCE_GAPS/READY_FOR_QA_REVIEW/' artifacts/my_packages/ASM-b920c8d03004c712c883fb4a/assessment.json
+kccs-evidence verify-package artifacts/my_packages/ASM-b920c8d03004c712c883fb4a
 ```
 
 **Expect:** `"ok": false` and `"problems": ["hash mismatch assessment.json"]`, with exit code 2. (On macOS, use `sed -i ''`.)
@@ -159,6 +159,8 @@ These figures come from a stratified evidence pack, not a random sample. They ar
 | `Workbook not found at data/…` | Put the file in `data/` with exactly this name: `KCCS_Sentinel_Reference_Data_Pack.xlsx` |
 | `45 skipped` in Step 4 | Same cause: the workbook is missing from `data/` |
 | `error: externally-managed-environment` | Activate the virtual environment first (Step 3) |
+| `requires a different Python` or `Python 3.11 or newer is required` | Your `python3` is too old. Install 3.11+ (macOS: `brew install python@3.12`) and recreate the environment with it (`rm -rf .venv && python3.12 -m venv .venv`) |
+| `NOT FOUND: … not found for tenant …` | The database has not been loaded yet (run `kccs-evidence ingest` first), or the event belongs to another customer |
 | `kccs-evidence: command not found` | Activate the virtual environment, or use `python -m kccs_evidence.cli …` instead |
 | `ZoneInfoNotFoundError` | Re-run `pip install -e ".[dev]"`, which installs `tzdata` |
 | Step 7 prints a different ID | Check that the workbook is the unmodified original (its SHA-256 starts with `9fe3fad7d0f77a5f`) and that the code is the version on `main` |

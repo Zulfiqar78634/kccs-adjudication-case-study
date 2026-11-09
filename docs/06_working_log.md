@@ -1,6 +1,6 @@
 # 06 — Working log (this session)
 
-**Honesty statement.** This repository was produced in **one AI-assisted session on 2026-11-08** using an AI coding agent (Hoplite, model `claude-opus-5-5`) on Zulfiqar's instruction. The agent wrote the code, tests and documents. The entries below record what was actually done and observed in that session, from the tool outputs. They are not reconstructed from memory, and nothing is invented about earlier sessions. **Zulfiqar's own review, disagreements and time spent are not yet recorded.** Section 3 is for that, and it should be completed before submission. Chain-of-thought is not reproduced; only decisions and the evidence for them.
+**Honesty statement.** This repository was produced in **AI-assisted sessions on 8–9 November 2026** using an AI coding agent (Hoplite, model `claude-opus-5-5`) on Zulfiqar's instruction. The agent wrote the code, tests and documents. The entries below record what was actually done and observed in that session, from the tool outputs. They are not reconstructed from memory, and nothing is invented about earlier sessions. **Zulfiqar's own review, disagreements and time spent are not yet recorded.** Section 3 is for that, and it should be completed before submission. Chain-of-thought is not reproduced; only decisions and the evidence for them.
 
 ## 1. Session steps
 
@@ -43,9 +43,27 @@ Discarded approaches, with reasons:
 
 Pattern: every error was caught by a check that compared the output against **a specific real record** or **a reproducibility invariant**, not by re-reading code.
 
-## 3. Candidate review (to complete by Zulfiqar before submission)
+## 3. Review after the first build (8–9 November)
 
-- [ ] Time actually spent (hours): ______
-- [ ] Sections I disagree with and my position: ______
-- [ ] Where I overruled the AI, and where I was wrong to: ______
-- [ ] Chat/session export attached? Export this conversation from the Hoplite thread, redact nothing confidential that the brief did not already contain, and save it as `docs/session_export.md` (or state that it is unavailable).
+After the first version was complete, Zulfiqar reviewed it, had it reviewed independently by a second AI tool (Perplexity), and checked it against the recruiter's instruction email. What came out of that review:
+
+| Input | What it said | Kept, changed or rejected | Why |
+|---|---|---|---|
+| Instruction email (4 Nov) | The submission goes to the recruiter, not only to the brief's contact | **Changed:** the cover note now goes to the recruiter. The AI had wrongly concluded she was not involved, because she is not named in the brief (step 2) | The email outranks an inference from the brief |
+| External review | Make the 76 tests visible as claims, not a count | **Kept:** README "What the tests prove" table, mapping each claim to a test file | A reviewer should be able to check a claim without reading every test |
+| External review | Explain early why every alert abstains | **Kept:** moved to the top of the README and FINAL_REPORT §2 | Otherwise "everything abstains" reads as "does nothing" |
+| External review | Separate observed facts from the system's interpretations | **Kept:** fact vs interpretation table in FINAL_REPORT §3, each with the approver it needs | The interpretations are policy choices, not data |
+| External review | List the 8 alerts that are blocked only by pack-wide gaps | **Kept:** table in FINAL_REPORT §2. Two of them *exceed* the study's limit, which shows that "unblocked" does not mean "safe" | The claim needed to be checkable |
+| External review | Split `assessment.py`; add manifest-stability tests; add drift checks | **Rejected for now:** idempotency, actor-independence and outcome-field independence tests already existed. Refactoring after submission was not worth the risk | Recorded as a production follow-up |
+| Request for runnable proof | Record an end-to-end run, not just claim one | **Added:** `scripts/e2e_check.sh` and `evidence/` (25 checks with logs) | The reviewer can see the results without running anything |
+
+Defects found during this review and fixed (9 November):
+
+| # | Defect | How it was found | Fix |
+|---|---|---|---|
+| 19 | The evidence-assessment sequence diagram in `docs/02` **did not render on GitHub**: semicolons inside a message are statement separators in Mermaid | Every diagram was rendered with the official Mermaid CLI. One failed with a parse error at line 10 | Removed the semicolons. All 5 diagrams now render. The architecture diagram was also switched to top-to-bottom for readability |
+| 20 | On macOS the scripts would pick Apple's bundled `python3` (often 3.9), and the install would fail with an unclear pip error | Reviewing the scripts for machines other than the build sandbox | `scripts/_python.sh` picks Python 3.11 or newer, or stops with a clear message. The scripts no longer use the Linux-only `sha256sum` |
+| 21 | Asking the CLI for an unknown event, or querying an empty database, printed a Python traceback | Running the README commands with wrong inputs | Clear one-line `NOT FOUND` / `ERROR` messages with non-zero exit codes, plus a hint to run `ingest` |
+| 22 | Notes meant only for the candidate (an unchecked to-do list, blank fields, a draft email, a checklist) were visible to reviewers | Reading the repository as a reviewer would | Removed or replaced with factual content |
+
+Time spent is stated in the covering note. The full chat transcript of the AI-assisted sessions is available on request.

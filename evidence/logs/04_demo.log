@@ -16,12 +16,12 @@
  "label": "SIMULATED correction (not a real Kestrel change)",
  "record": "02_Product_Master/R57",
  "new_source_version": 2,
- "original_assessment": "ASM-669e9e1d77c3ae0b6a6c75d9",
- "original_payload_sha256_before": "d670daef18007faa6587669682df8c5f25a1d632b5743f849b9412d53352df4d",
- "original_payload_sha256_after": "d670daef18007faa6587669682df8c5f25a1d632b5743f849b9412d53352df4d",
+ "original_assessment": "ASM-b920c8d03004c712c883fb4a",
+ "original_payload_sha256_before": "a96adc00931f43c2b4f8255647d10ff619e5568aac83cb34cc5b7446cbc1eac5",
+ "original_payload_sha256_after": "a96adc00931f43c2b4f8255647d10ff619e5568aac83cb34cc5b7446cbc1eac5",
  "original_unchanged": true,
- "new_assessment": "ASM-d47720fd41e2b790f6b3eaba",
- "supersedes": "ASM-6d22f4e6e940e6bfbd8a0863",
+ "new_assessment": "ASM-05d9c98a6e382a6d3d50d54b",
+ "supersedes": "ASM-e301f0da23e6da659f419dd6",
  "change": {
   "added_findings": [],
   "removed_findings": [

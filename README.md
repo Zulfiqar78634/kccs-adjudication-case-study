@@ -1,134 +1,145 @@
-# KCCS Sentinel: evidence-resolution and replay kernel (case-study submission)
+# KCCS Sentinel: case-study submission
 
-Candidate: **Zulfiqar**. Start with **[FINAL_REPORT.md](FINAL_REPORT.md)**. To run and check everything yourself, follow **[docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md)** (about 2 minutes, with the expected output at each step). Recorded end-to-end test evidence on the supplied workbook (25/25 checks passed, with full logs) is in **[evidence/E2E_EVIDENCE.md](evidence/E2E_EVIDENCE.md)**.
+**Candidate:** Zulfiqar · **Brief:** *The Adjudication Problem* (Kestrel Cold Chain Solutions, 18 Sep 2026)
 
+**In one sentence:** when a temperature alert fires, this system gathers the evidence a QA reviewer needs: the right product, the SOP in force on that date, the right stability study and the regulatory deadline. It uses only that customer's data, records exactly what it used, and **says "not enough evidence" instead of guessing**. It never makes the product decision; a named human does.
+
+---
+
+## How to review this in 6 steps
+
+You can stop after any step. Steps 1–4 need no installation.
+
+### Step 1: Read the summary (5–10 minutes)
+
+Open **[FINAL_REPORT.md](FINAL_REPORT.md)**. It covers what I concluded, what I built, what it found in the data, and what is not built.
+
+### Step 2: Find each part you asked for
+
+| You asked for | Where it is |
+|---|---|
+| **1. Where you land**: requirements, what I won't build, rollout and first customer, gaps and contradictions, board targets I challenge | [docs/01_where_we_land.md](docs/01_where_we_land.md) |
+| **2. The design**: architecture, components, data model and "as at a date" queries, case lifecycle, outages and the regulatory clock, versioning and deployment, diagrams | [docs/02_architecture_hld.md](docs/02_architecture_hld.md) (overview) and [docs/03_detailed_design_lld.md](docs/03_detailed_design_lld.md) (detail) |
+| **3. Working prototype**: the most critical component, run on the real workbook, and how it is validated | Code in [src/kccs_evidence/](src/kccs_evidence/), tests in [tests/](tests/), validation in [docs/05_validation_and_operations.md](docs/05_validation_and_operations.md) |
+| **4. Working log**: discarded ideas, wrong assumptions and how they were caught, changes of direction | [docs/06_working_log.md](docs/06_working_log.md) |
+
+Also useful: what the data revealed, in [docs/04_data_findings_and_assumptions.md](docs/04_data_findings_and_assumptions.md), and a 20-minute walkthrough with hard questions, in [docs/07_review_walkthrough.md](docs/07_review_walkthrough.md).
+
+### Step 3: See the proof that it works, without running anything
+
+Open **[evidence/E2E_EVIDENCE.md](evidence/E2E_EVIDENCE.md)**. It records a full end-to-end run on the supplied workbook: **25 of 25 checks passed and all 76 automated tests passed**, with every log kept in [evidence/logs/](evidence/logs/).
+
+### Step 4: Look at one real example: the brief's own case, EXC-107133
+
+The brief describes Priya spending 1 hour 50 minutes on this insulin alert. Open [evidence/results/EXC-107133_assessment_excerpt.json](evidence/results/EXC-107133_assessment_excerpt.json) to see what the system finds from the data alone:
+
+| Question the reviewer had to answer | What the system found |
+|---|---|
+| Which product is this? | GTIN `08901234500035` matched to Kaveri's own product record (the same GTIN also exists for 3 other customers, which it does not look at) |
+| Which SOP revision was in force? | **Two revisions (Rev 02 and Rev 03) of SOP-KAV-9392 were both in force that day.** It flags the conflict instead of picking one |
+| Which stability study applies? | The product record points to **STB-3584, a study for the vial, not the pen**, and it is partly unreadable, so it is rejected. The correct pen study **STB-2738** is found and offered for confirmation |
+| Is the regulator deadline at risk? | If notifiable, due **12 Aug 2026 06:31 UTC**, counted from when the alert arrived, not from when the excursion started |
+| Can it decide? | **No.** It lists the human actions needed, ending with "Sign or decline the disposition: Site QA" |
+
+### Step 5: Run it yourself (about 2 minutes)
+
+You need Python 3.11+ and the workbook `KCCS_Sentinel_Reference_Data_Pack.xlsx`. No API keys and no internet are needed after install.
+
+```bash
+git clone https://github.com/Zulfiqar78634/kccs-adjudication-case-study.git
+cd kccs-adjudication-case-study
+mkdir -p data && cp /path/to/KCCS_Sentinel_Reference_Data_Pack.xlsx data/
+scripts/e2e_check.sh
 ```
-Workbook / source systems → ingestion (row refs, hashes) → append-only bitemporal store
-  → tenant-scoped evidence resolution (entities, SOP in force, stability, telemetry, firmware)
-  → assessment + evidence package + notification-obligation clock → accountable human QA reviewer
-```
 
-## Reviewer's 5-minute path
+It installs everything, runs all the checks, prints PASS or FAIL for each one, and writes the evidence to `evidence/`. **Expect the last line to read `checks: 25, failed: 0`.**
 
-1. `scripts/run_all.sh` (with the workbook in `data/`): installs, runs the 76 tests, runs the demo.
-2. Open `artifacts/cases/EXC-107133_at_alert.json`: the brief's own case, reconstructed from the data.
-3. Open `artifacts/evaluation/summary.md`: results across all 420 alerts, including what the kernel misses.
-4. Skim `tests/`: each claim below is backed by a named test.
+- **macOS:** the bundled `python3` is often 3.9. The script automatically uses a newer one if you have it (`python3.13`, `python3.12` or `python3.11`). If you don't, it stops with a clear message; install one with `brew install python@3.12` and re-run. To choose an interpreter explicitly: `PYTHON=/path/to/python3.12 scripts/e2e_check.sh`.
+- **Windows:** run it from WSL or Git Bash, or follow the individual commands in [docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md).
+- **Tested on:** Linux with Python 3.11, 3.12 and 3.13 (see [evidence/](evidence/E2E_EVIDENCE.md)). Not tested on macOS or Windows machines; the scripts use only portable shell commands.
 
-## Why every alert abstains, and why that is correct
+For each command on its own, with the output to expect at every step, see **[docs/STEP_BY_STEP.md](docs/STEP_BY_STEP.md)**.
 
-The kernel is designed to refuse unsupported conclusions. On this pack, refusing is the right answer, because the missing inputs are exactly the ones a defensible disposition needs:
-- the temperature series (the pack has only aggregates);
-- SOP acceptance-limit content (the pack is an index only);
-- batch exposure history.
+### Step 6: Read the code (optional)
 
-Even while abstaining, each assessment:
-- resolves product, site and carrier for that tenant only;
-- names the SOP revision in force, or the conflict;
-- accepts or rejects each stability study with a reason;
-- computes the notification deadline;
-- lists the precise human actions needed;
-- can be replayed bit-for-bit.
+Each file does one job:
 
-If only the series and SOP content were captured, 8 of the 420 alerts would have no remaining blocker (see `FINAL_REPORT.md` §2).
+| File | What it does, in plain words |
+|---|---|
+| [`sources.py`](src/kccs_evidence/sources.py) | Reads the workbook and keeps each row exactly as received, with its sheet and row number |
+| [`store.py`](src/kccs_evidence/store.py) | Saves everything permanently. Corrections are added as new versions; nothing is ever overwritten or deleted |
+| [`access.py`](src/kccs_evidence/access.py) | Makes sure each request can only see one customer's data, and logs every refusal |
+| [`resolution.py`](src/kccs_evidence/resolution.py) | Works out which product, site and carrier an alert refers to, or says "ambiguous" or "unknown" |
+| [`policy_sop.py`](src/kccs_evidence/policy_sop.py) | Finds the SOP revision in force at that site on that date, and flags overlaps |
+| [`stability.py`](src/kccs_evidence/stability.py) | Checks that a stability study belongs to this customer, is for this product form, and is readable |
+| [`signals.py`](src/kccs_evidence/signals.py) | Temperature arithmetic, including the faulty-firmware uncertainty ("up to 1.8 °C") |
+| [`obligations.py`](src/kccs_evidence/obligations.py) | The regulatory notification clock, which runs separately and is never paused |
+| [`assessment.py`](src/kccs_evidence/assessment.py) | Puts it all together into one assessment, or a refusal with reasons |
+| [`package.py`](src/kccs_evidence/package.py) | Exports the evidence with fingerprints, so any later change is detected |
+| [`evaluation.py`](src/kccs_evidence/evaluation.py) | Compares results with what humans did in the past. Kept separate so past outcomes never influence the assessment |
+| [`cli.py`](src/kccs_evidence/cli.py) | The `kccs-evidence` command-line tool |
 
-## Why this is not an LLM system
+---
 
-No model, API key or network is used. The hard part is evidence correctness, which is deterministic and must be reproducible for an inspector. A language model could later draft reviewer prose *from* a finished assessment under a versioned route, but the design treats "no LLM" as a fully supported route. This matters because some tenants prohibit external model APIs, and self-hosting would exceed the model budget (`docs/02` §9).
+## Four ideas behind the design
 
-## What the tests prove (76 tests, `tests/`)
+1. **Refuse rather than guess.** If evidence is missing or conflicting, the answer is "not enough evidence, here is what a human must do". On this workbook every alert ends that way. That is correct, because the workbook has no temperature series, no SOP text and no batch history, which are exactly what a safe decision needs. With only those gaps closed, 8 of the 420 alerts would be ready for a reviewer.
+2. **One customer at a time.** Searches are limited to the requesting customer's data from the start, rather than filtered afterwards. This prevents incidents like the Meridian/Pinnacle near-miss in the brief.
+3. **"What did we know then?" is a separate question from "what do we know now?"** Every result records the date it reflects and the date of the knowledge it used. Re-running the past gives the same answer, even after later corrections.
+4. **Two clocks.** The product decision can wait for evidence; the regulator's deadline cannot. Notification is tracked separately from the moment the alert arrives.
+
+---
+
+## Reference
+
+### What the 76 tests prove
 
 | Claim | Tests |
 |---|---|
-| Tenant isolation: cross-tenant reads, exports and lookups are denied and audited; the same GTIN resolves separately per tenant; untenanted product aliases are unreadable | `test_tenant_isolation.py` |
-| Temporal correctness: SOP revision at a site-local date, half-open boundaries, overlaps reported as conflicts, unknown timezone near a boundary reported as ambiguous | `test_temporal.py` |
-| No future knowledge in replay: a bulletin or alias learned after the alert is invisible at that cutoff | `test_temporal.py::test_replay_excludes_bulletin_learned_after_alert`, `::test_alias_confirmed_after_alert_is_not_used_in_replay` |
-| Replay determinism and idempotency: the same evidence state gives the same assessment ID; re-ingest adds nothing | `test_assessment.py::test_repeated_execution_is_idempotent`, `test_ingestion_and_store.py::test_reingest_is_idempotent` |
-| Correction semantics: a correction creates a superseding assessment; the original row is byte-identical; history tables reject UPDATE/DELETE | `test_assessment.py::test_correction_produces_new_assessment_and_old_is_immutable`, `test_ingestion_and_store.py` |
-| Evidence-package integrity: packages are reproducible and tampering is detected | `test_package.py` |
-| Abstention, not guessing: missing or ambiguous evidence never yields READY; no output is ever a disposition (checked on all 420 alerts); historical outcomes are not inputs | `test_assessment.py` |
-| Stability checks: wrong presentation (EXC-110497, EXC-107133), unreadable studies, misleading file paths, firmware "up to 1.8 °C" treated as an interval | `test_stability_and_signals.py` |
-| Notification clock: starts at alert receipt; waits don't move it; "next business day" refuses to guess; failed delivery ≠ success; a storm of 1,912 keeps every obligation | `test_obligations.py` |
+| Customers are isolated: cross-customer reads and exports are refused and logged; the same GTIN resolves separately per customer | `tests/test_tenant_isolation.py` |
+| Dates are handled correctly: SOP revision at the site's local date, boundaries, overlaps reported as conflicts | `tests/test_temporal.py` |
+| No future knowledge leaks into the past: a fact learned after the alert is invisible at that point in time | `tests/test_temporal.py` |
+| Results are reproducible: same evidence, same ID; loading twice adds nothing | `tests/test_assessment.py`, `tests/test_ingestion_and_store.py` |
+| Corrections never edit history: a new assessment supersedes the old, and the original stays identical | `tests/test_assessment.py`, `tests/test_ingestion_and_store.py` |
+| Evidence packages can't be silently altered | `tests/test_package.py` |
+| It never guesses and never makes a disposition (checked on all 420 alerts); past outcomes are not used as inputs | `tests/test_assessment.py` |
+| Stability checks catch wrong product forms, unreadable studies and misleading folder paths | `tests/test_stability_and_signals.py` |
+| The notification clock starts at alert receipt, is not paused by waiting, refuses to guess "next business day", and keeps every alert during a 1,912-alert storm | `tests/test_obligations.py` |
 
-## What this is
+### What is built, simulated, or design only
 
-A working prototype of the part of Kestrel's adjudication problem that is hardest to get right: turning a real alert into a **tenant-scoped, temporally correct, reproducible evidence assessment** that **refuses unsupported conclusions**. Around it sit the written deliverables (position, HLD/LLD, data findings, validation and operations, working log). The prototype never makes a pharmaceutical disposition; humans sign those.
-
-| Implemented [IMPL] | Simulated / stubbed [SIM] | Design only [DESIGN] |
+| Built and tested | Simulated or stubbed (clearly labelled) | Design only (documented, not built) |
 |---|---|---|
-| Workbook ingestion with row refs and hashes; append-only bitemporal SQLite store; tenant access control with audit; tenant-scoped product/site/carrier resolution; human-approved mappings; SOP revision selection (half-open site-local dates, overlap = conflict, site scope); stability admissibility (owner, presentation, readability, relevance, missingness); limit arithmetic with firmware uncertainty band; telemetry quality flags; knowledge-cutoff replay (reconstructed and strict); assessments with execution manifest and content-hash IDs; supersession on correction; evidence package export/verify; notification obligation clock and state machine (reference, in-memory); data-quality report; separate evaluation layer | Telemetry archive, document content store, batch exposure history, regulator gateway (all report NOT_AVAILABLE); one clearly labelled **simulated** source correction in the demo; synthetic fixtures for edge cases the workbook lacks | Case workflow with leases and dual signature; outbox and durable DB timers; regional cells; connectors to the nine systems; LLM drafting route; per-tenant search indexes; WORM storage; monitoring |
+| Workbook loading with row references; permanent versioned store; customer access control; product, site and carrier matching; SOP selection by date and site; stability checks; temperature and firmware arithmetic; "as known then" replay; reproducible assessments; corrections; evidence packages; notification clock; data-quality report; evaluation against past cases | Temperature-series archive, SOP document text, batch history, regulator gateway; one labelled simulated correction in the demo; small synthetic test cases for situations the workbook lacks | Reviewer workflow and dual signatures; regional deployment (EU, India, Americas); connectors to the nine source systems; optional language-model drafting; monitoring |
 
-## Prerequisites
+### Limitations
 
-Python ≥ 3.11 (tested on 3.12.3). No API keys, no network after install, no paid services.
+- Every alert abstains on this workbook, for the reasons above.
+- Some interpretations (site-scope mapping, product-form keywords, notification rules, firmware bulletin) are my reading of the data and need QA or Regulatory Affairs approval. They are kept in [src/kccs_evidence/config/](src/kccs_evidence/config/).
+- The 420 alerts are a hand-picked evidence pack, not a random sample. Counts across them are not accuracy or automation-rate estimates.
+- Recovery targets, alert thresholds and costs in the design documents are proposals, not measurements.
 
-## Where to place the workbook
+### Troubleshooting
 
-The workbook is confidential and **not committed**. Copy the supplied file to:
-
-```
-data/KCCS_Sentinel_Reference_Data_Pack.xlsx
-```
-
-(or set `KCCS_WORKBOOK=/path/to/file.xlsx`).
-
-## Commands
-
-```bash
-# one command: venv, install, tests (output saved), full demo
-scripts/run_all.sh
-
-# or step by step
-python3 -m venv .venv && . .venv/bin/activate
-pip install -e ".[dev]"
-python -m pytest -v                                              # 76 tests
-kccs-evidence inspect --workbook data/KCCS_Sentinel_Reference_Data_Pack.xlsx --out-dir artifacts/data_quality
-kccs-evidence demo    --workbook data/KCCS_Sentinel_Reference_Data_Pack.xlsx --out-dir artifacts
-
-# individual operations
-kccs-evidence ingest  --workbook data/KCCS_Sentinel_Reference_Data_Pack.xlsx --db artifacts/kernel.sqlite
-kccs-evidence assess  --db artifacts/kernel.sqlite --tenant T-KAVERI --event EXC-107133 --knowledge-cutoff alert --out /tmp/a.json
-kccs-evidence assess  --db artifacts/kernel.sqlite --tenant T-KAVERI --event EXC-107133 --knowledge-cutoff 2026-09-14T23:59:00Z
-kccs-evidence assess  --db artifacts/kernel.sqlite --tenant T-MERIDIAN --tenant-scope T-PINNACLE --event EXC-110630   # → ACCESS DENIED (exit 3)
-kccs-evidence export-package --db artifacts/kernel.sqlite --assessment-id ASM-… --tenant-scope T-KAVERI
-kccs-evidence verify-package artifacts/packages/ASM-…
-```
-
-## Expected outputs (`artifacts/`, git-ignored because they contain real data)
-
-| Path | Content |
+| Problem | Fix |
 |---|---|
-| `data_quality/report.md`, `report.json` | Inspection and data-quality report |
-| `evaluation/summary.md`, `summary.json` | Coverage, abstentions, conflicts, firmware replay, override-reason coverage, notification check (**not** accuracy estimates) |
-| `cases/*.json` | Full assessments for selected real cases, at alert and as at extract, plus the post-correction assessment |
-| `packages/ASM-*/` | Evidence packages with `MANIFEST.json` hashes |
-| `demo_run.json` | Idempotency, isolation denial, correction immutability, package verification |
-| `test_output.txt` | Test run output |
-| `kernel.sqlite` | The append-only store |
+| `Workbook not found` | Put the file in `data/` with exactly this name: `KCCS_Sentinel_Reference_Data_Pack.xlsx` |
+| Tests show `45 skipped` | Same cause: the workbook is not in `data/` |
+| `externally-managed-environment` | Use the scripts, which create their own Python environment, or activate a virtual environment first |
+| `kccs-evidence: command not found` | Activate the environment (`. .venv/bin/activate`) or use `python -m kccs_evidence.cli` |
 
-## Troubleshooting
-
-- `workbook not found`: tests that need the workbook **skip** (CI does this deliberately). Place the file as above.
-- `externally-managed-environment` from pip: use the venv (`scripts/run_all.sh` creates one).
-- `ZoneInfoNotFoundError`: the `tzdata` dependency is installed by `pip install -e .`; re-run the install.
-- Re-running the demo is safe. It deletes and rebuilds only its own `artifacts/` subfolders.
-
-## Limitations and known risks
-
-- The pack has no document content, no temperature series, no batch history and no recorded-time history. Every assessment therefore abstains, and replay "as known then" is a labelled reconstruction.
-- Scope-string interpretations, the presentation lexicon, notification regimes and bulletin semantics are prototype interpretations that **need QA / Regulatory Affairs approval** (`src/kccs_evidence/config/`).
-- Product aliases are quarantined by policy, so 81 alias-string references stay unresolved. This is intentional and costs coverage.
-- Results over the 420 rows are from a stratified evidence pack, not population estimates.
-- RPO/RTO, thresholds and costs in the docs are proposals or assumptions, not measurements.
-
-## Repository map
+### Repository map
 
 ```
-FINAL_REPORT.md            cover report for the submission
-SUBMISSION_CHECKLIST.md    evaluator expectations → file/section/test
-docs/01..07                deliverables A, B, data findings, validation/ops, working log (D), walkthrough
-docs/submission_email.md   covering note draft
-src/kccs_evidence/         kernel (see module docstrings); config/ holds versioned interpretations
-tests/                     76 pytest tests (real workbook + labelled synthetic fixtures)
-scripts/                   run_all.sh, inspect_workbook.py
+README.md                     this page: start here
+FINAL_REPORT.md               summary of the whole submission
+docs/01 … 07                  the written deliverables (see Step 2)
+docs/STEP_BY_STEP.md          run every command, with the expected output
+evidence/                     recorded end-to-end test run (25/25 passed) and its logs
+src/kccs_evidence/            the prototype (see Step 6)
+tests/                        76 automated tests
+scripts/e2e_check.sh          run every check and record the evidence
+scripts/run_all.sh            install, test and run the demo
 ```
+
+The confidential workbook is not in this repository. Results produced on your machine go to `artifacts/`, which is also not committed.

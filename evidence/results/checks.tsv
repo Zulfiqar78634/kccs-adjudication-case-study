@@ -17,7 +17,7 @@ E15	EXC-107133 SOP overlap detected	SOP-KAV-9392 CONFLICT_OVERLAPPING_REVISIONS 
 E16	EXC-107133 wrong-presentation study rejected	STB-3584 False	STB-3584 False	PASS
 E17	EXC-107133 pen study offered as candidate	True	True	PASS
 E18	EXC-107133 notification deadline from alert receipt	2026-08-12T06:31:00Z	2026-08-12T06:31:00Z	PASS
-E19	Assessment ID reproducible across runs	ASM-669e9e1d77c3ae0b6a6c75d9	ASM-669e9e1d77c3ae0b6a6c75d9	PASS
+E19	Assessment ID reproducible across runs	ASM-b920c8d03004c712c883fb4a	ASM-b920c8d03004c712c883fb4a	PASS
 E20	Later knowledge cutoff gives a different assessment	True	True	PASS
 E21	CLI cross-tenant read refused (exit code)	3	3	PASS
 E22	Exported package verifies	0	0	PASS
