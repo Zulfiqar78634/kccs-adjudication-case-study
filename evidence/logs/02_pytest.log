@@ -85,6 +85,6 @@ tests/test_tenant_isolation.py::test_package_export_denied_for_other_tenant PASS
 tests/test_tenant_isolation.py::test_lane_history_never_includes_other_tenants PASSED [ 98%]
 tests/test_tenant_isolation.py::test_evaluation_only_sheets_not_reachable_from_tenant_view PASSED [100%]
 
-============================== 78 passed in 6.56s ==============================
+============================== 78 passed in 5.72s ==============================
 [exit 0]
 

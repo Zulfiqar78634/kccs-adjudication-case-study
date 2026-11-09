@@ -17,12 +17,12 @@ $ /tmp/hoplite/workspace/.venv-e2e/bin/python -m kccs_evidence.cli demo --workbo
  "label": "SIMULATED correction (not a real Kestrel change)",
  "record": "02_Product_Master/R57",
  "new_source_version": 2,
- "original_assessment": "ASM-42fed7e003e39830f09bf75e",
- "original_payload_sha256_before": "73712d1218079292cd678ebb1b6bb89a830430689139d8c6d4e61ac4b4ad27f3",
- "original_payload_sha256_after": "73712d1218079292cd678ebb1b6bb89a830430689139d8c6d4e61ac4b4ad27f3",
+ "original_assessment": "ASM-7d055f3185a57e741da03b4c",
+ "original_payload_sha256_before": "2d8e890b8a90965cd5c50536a60d6c19857d9c3c564f701a6928714d2bcb26c4",
+ "original_payload_sha256_after": "2d8e890b8a90965cd5c50536a60d6c19857d9c3c564f701a6928714d2bcb26c4",
  "original_unchanged": true,
- "new_assessment": "ASM-747cc79b92bcc80c806713ca",
- "supersedes": "ASM-fffe3ad0b3aaab419e16e577",
+ "new_assessment": "ASM-e4f1c33491bd0826a619c875",
+ "supersedes": "ASM-b6b6a6273cdec172859deb86",
  "change": {
   "added_findings": [],
   "removed_findings": [

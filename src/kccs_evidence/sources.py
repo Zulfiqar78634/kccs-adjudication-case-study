@@ -4,6 +4,7 @@ Original cell values are preserved exactly (strings stay strings, so GTIN
 leading zeros survive). Nothing is cleaned here; interpretation happens later
 and always cites the source reference (sheet + Excel row).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -97,8 +98,7 @@ def load_workbook_snapshot(path: str | Path) -> SourceSnapshot:
     missing = [s for s in SHEETS if s not in wb.sheetnames]
     if missing:
         raise ValueError(f"Workbook is missing expected sheets: {missing}")
-    snap = SourceSnapshot(snapshot_id=f"SNAP-{file_sha[:16]}", file_name=path.name,
-                          file_sha256=file_sha, extract_date=None)
+    snap = SourceSnapshot(snapshot_id=f"SNAP-{file_sha[:16]}", file_name=path.name, file_sha256=file_sha, extract_date=None)
     for sheet, (key_col, tenant_col, attribution) in SHEETS.items():
         rows = list(wb[sheet].iter_rows(values_only=True))
         if sheet in KEY_VALUE_SHEETS:
@@ -121,10 +121,15 @@ def load_workbook_snapshot(path: str | Path) -> SourceSnapshot:
             else:
                 key = f"R{excel_row}"
             tenant = payload.get(tenant_col) if tenant_col else None
-            rec = SourceRecord(sheet=sheet, record_key=key, excel_row=excel_row,
-                               tenant_code=tenant if isinstance(tenant, str) else None,
-                               attribution=attribution, payload=payload,
-                               row_hash=sha256_text(canonical_json({"sheet": sheet, "payload": payload})))
+            rec = SourceRecord(
+                sheet=sheet,
+                record_key=key,
+                excel_row=excel_row,
+                tenant_code=tenant if isinstance(tenant, str) else None,
+                attribution=attribution,
+                payload=payload,
+                row_hash=sha256_text(canonical_json({"sheet": sheet, "payload": payload})),
+            )
             snap.records.append(rec)
             if sheet == "00_README" and payload.get("c1") == "Extract date":
                 snap.extract_date = str(payload.get("c2"))

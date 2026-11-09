@@ -4,6 +4,7 @@ Runs on every platform in CI, including Windows and macOS, where the real workbo
 It covers the platform-sensitive paths: subprocess console encoding of non-ASCII output, byte-exact
 evidence-package files (Windows newline translation), file paths, SQLite and time zones.
 """
+
 from __future__ import annotations
 
 import json
@@ -13,7 +14,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 from synthetic_workbook import build
 
 NOW = "2026-11-08T12:00:00Z"
@@ -52,13 +52,13 @@ def test_full_cli_flow_on_this_platform(env_dir):
     assert a["evidence"]["sop_origin"][0]["in_force"] == ["Rev 01", "Rev 02"]
     assert a["evidence"]["stability"]["referenced"]["study_ref"] == "STB-0001"
     assert a["evidence"]["stability"]["referenced"]["admissible"] is True
-    assert a["notification_track"]["due_at_utc"] == "2026-07-30T06:30:00Z"           # India 360 h from alert receipt
+    assert a["notification_track"]["due_at_utc"] == "2026-07-30T06:30:00Z"  # India 360 h from alert receipt
     aid = a["assessment_id"]
-    if os.environ.get("KCCS_ID_OUT"):                                                     # CI compares this across OSes
+    if os.environ.get("KCCS_ID_OUT"):  # CI compares this across OSes
         Path(os.environ["KCCS_ID_OUT"]).write_text(aid + "\n" + a["manifest"]["code_sha256"] + "\n", encoding="utf-8", newline="\n")
 
     p = cli("assess", "--db", db, "--tenant", "T-KAVERI", "--event", "EXC-900001", "--knowledge-cutoff", "alert", "--now", NOW, cwd=d)
-    assert json.loads(p.stdout.decode("utf-8"))["assessment_id"] == aid                 # reproducible
+    assert json.loads(p.stdout.decode("utf-8"))["assessment_id"] == aid  # reproducible
 
     # Evidence package: export, verify, then tamper (Windows newline translation used to break this).
     p = cli("export-package", "--db", db, "--assessment-id", aid, "--tenant-scope", "T-KAVERI", "--out-dir", d / "pk", "--now", NOW, cwd=d)
@@ -83,6 +83,7 @@ def test_full_cli_flow_on_this_platform(env_dir):
 def test_code_fingerprint_ignores_line_endings(tmp_path, monkeypatch):
     """A CRLF checkout (Git for Windows default) must fingerprint the same code identically."""
     import shutil
+
     import kccs_evidence
     from kccs_evidence import assessment
 

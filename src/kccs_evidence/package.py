@@ -5,6 +5,7 @@ record versions it cites (event row restricted to allowed input fields), the
 audit trail for the event, and MANIFEST.json listing every file's SHA-256 plus
 a package digest. `verify_package` recomputes all hashes.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -31,8 +32,7 @@ def export_package(store: Store, principal: Principal, assessment_id: str, out_d
     if row is None:
         raise KeyError(assessment_id)
     if row["tenant_code"] not in principal.tenants:
-        store.audit(at=exported_at, actor=principal.actor_id, tenant=row["tenant_code"], action="PACKAGE_EXPORT",
-                    target=assessment_id, outcome="DENIED")
+        store.audit(at=exported_at, actor=principal.actor_id, tenant=row["tenant_code"], action="PACKAGE_EXPORT", target=assessment_id, outcome="DENIED")
         raise TenantAccessDenied(f"{principal.actor_id} may not export {assessment_id}")
     if sha256_text(row["payload_json"]) != row["payload_sha256"]:
         raise ValueError(f"stored assessment {assessment_id} fails its integrity hash")
@@ -50,22 +50,55 @@ def export_package(store: Store, principal: Principal, assessment_id: str, out_d
             if v.version == int(ver):
                 if v.tenant_code not in (None, tenant):
                     raise TenantAccessDenied("package would include another tenant's record")
-                cited.append({"sheet": sheet, "record_key": key, "version": v.version, "excel_row": v.excel_row,
-                              "recorded_at": v.recorded_at, "change_kind": v.change_kind, "row_hash": v.row_hash, "payload": v.payload})
+                cited.append(
+                    {
+                        "sheet": sheet,
+                        "record_key": key,
+                        "version": v.version,
+                        "excel_row": v.excel_row,
+                        "recorded_at": v.recorded_at,
+                        "change_kind": v.change_kind,
+                        "row_hash": v.row_hash,
+                        "payload": v.payload,
+                    }
+                )
     event_hist = store.record_history("01_Excursion_Events", payload["event"]["event_id"])
-    event_versions = [{"version": v.version, "excel_row": v.excel_row, "recorded_at": v.recorded_at,
-                       "allowed_fields": {k: v.payload.get(k) for k in ALLOWED_EVENT_FIELDS}} for v in event_hist if v.tenant_code == tenant]
+    event_versions = [
+        {"version": v.version, "excel_row": v.excel_row, "recorded_at": v.recorded_at, "allowed_fields": {k: v.payload.get(k) for k in ALLOWED_EVENT_FIELDS}}
+        for v in event_hist
+        if v.tenant_code == tenant
+    ]
     files["source_records.json"] = _write(out / "source_records.json", {"event": event_versions, "cited": cited})
     audit = [a for a in store.audit_events() if a["tenant_code"] == tenant and payload["event"]["event_id"] in (a["detail_json"] or "") + (a["target"] or "")]
     files["audit_trail.json"] = _write(out / "audit_trail.json", audit)
-    files["README.txt"] = _write(out / "README.txt", {
-        "what": "Evidence package for one assessment. This is a reviewer aid / abstention record, not a disposition.",
-        "verify": "python -m kccs_evidence.cli verify-package <this directory>"})
+    files["README.txt"] = _write(
+        out / "README.txt",
+        {
+            "what": "Evidence package for one assessment. This is a reviewer aid / abstention record, not a disposition.",
+            "verify": "python -m kccs_evidence.cli verify-package <this directory>",
+        },
+    )
     digest = sha256_text(canonical_json(files))
-    _write(out / "MANIFEST.json", {"assessment_id": assessment_id, "tenant_code": tenant, "exported_at": exported_at,
-                                   "exported_by": principal.actor_id, "files_sha256": files, "package_digest": digest})
-    store.audit(at=exported_at, actor=principal.actor_id, tenant=tenant, action="PACKAGE_EXPORT", target=assessment_id,
-                outcome="EXPORTED", detail={"package_digest": digest})
+    _write(
+        out / "MANIFEST.json",
+        {
+            "assessment_id": assessment_id,
+            "tenant_code": tenant,
+            "exported_at": exported_at,
+            "exported_by": principal.actor_id,
+            "files_sha256": files,
+            "package_digest": digest,
+        },
+    )
+    store.audit(
+        at=exported_at,
+        actor=principal.actor_id,
+        tenant=tenant,
+        action="PACKAGE_EXPORT",
+        target=assessment_id,
+        outcome="EXPORTED",
+        detail={"package_digest": digest},
+    )
     return out
 
 

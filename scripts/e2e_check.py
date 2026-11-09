@@ -21,7 +21,7 @@ import sys
 import time
 from pathlib import Path
 
-if sys.version_info < (3, 11):
+if sys.version_info < (3, 11):  # noqa: UP036 - this script may be started by an older interpreter
     sys.exit(f"Python 3.11 or newer is required; this is {platform.python_version()}.\n"
              "Run it with a newer interpreter, e.g. `python3.12 scripts/e2e_check.py` (macOS/Linux) "
              "or `py -3.12 scripts\\e2e_check.py` (Windows). Install from https://www.python.org/downloads/")

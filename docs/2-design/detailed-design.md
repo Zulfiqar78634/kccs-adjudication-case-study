@@ -1,4 +1,4 @@
-# 03 — Detailed design (LLD)
+# Deliverable 2: Detailed design (low-level design)
 
 Legend: **[IMPL]** in prototype · **[SIM]** stubbed · **[DESIGN]** proposed.
 
@@ -15,6 +15,38 @@ Legend: **[IMPL]** in prototype · **[SIM]** stubbed · **[DESIGN]** proposed.
 | **Reconstructed mode (pack limitation)** | The pack has no recorded-time history, so its snapshot is treated as a backfilled baseline. Anything recorded *after* the baseline (corrections, mappings) is visible only if `recorded_at ≤ cutoff`. Domain knowledge dates gate further: alias `confirmed_on`, bulletin `known_from`, precedent signature time, product-master `last_updated` (flagged when after the alert). Every reconstructed assessment carries `KNOWLEDGE_TIME_RECONSTRUCTED` | [IMPL] |
 | **Supersession** | New versions append; nothing is updated or deleted (DB triggers). A signed disposition references an assessment ID, which references exact source versions; later corrections produce a new assessment with `supersedes` and a `change_from_superseded` diff | [IMPL] |
 | **Conflicts** | Two in-force revisions, a master vs study limit, an ambiguous identifier, or attribution disagreement → BLOCKING finding naming every candidate. No ranking, no "latest row wins" | [IMPL] |
+
+### Worked example: an "as at a date" query
+
+Every question has two dates, and the system always asks for both:
+
+- **valid date:** which SOP revision applied *on 28 July 2026 at the Kundli site*?
+- **knowledge date:** what did we *know* about that *as at 28 July 06:31 UTC* (the alert), or as at today?
+
+**Step 1: knowledge time.** Take, for each record, the latest version this system had recorded by the cutoff. This is the query the prototype runs ([`store.py`](../../src/kccs_evidence/store.py) `records()`). The tenant filter is in the SQL, so another tenant's rows are never read:
+
+```sql
+SELECT v.* FROM source_record_version v
+WHERE v.sheet = '05_SOP_Index'
+  AND v.tenant_code = 'T-KAVERI'                       -- isolation before retrieval
+  AND v.recorded_at <= :knowledge_cutoff               -- "as we knew it then"
+  AND v.version = (SELECT MAX(w.version) FROM source_record_version w
+                   WHERE w.sheet = v.sheet AND w.record_key = v.record_key
+                     AND w.recorded_at <= :knowledge_cutoff);
+```
+
+**Step 2: valid time.** Convert the excursion instant to the governed site's local date, then keep each revision whose half-open interval contains it: `effective_from <= local_date < effective_to` (a blank `effective_to` is open), in [`temporal.py`](../../src/kccs_evidence/temporal.py) and [`policy_sop.py`](../../src/kccs_evidence/policy_sop.py).
+
+**Step 3: decide.** Exactly one revision means it is selected. None means `NONE_IN_FORCE` (blocking). Two or more means `CONFLICT_OVERLAPPING_REVISIONS`, a blocking conflict that names every candidate; the system never picks one.
+
+**Applied to EXC-107133:** excursion 2026-07-28 06:14 UTC is 28 July in Asia/Kolkata. SOP-KAV-9392 Rev 02 `[2025-09-01, 2026-08-31)` and Rev 03 `[2026-05-16, open)` both contain that date, so the result is `CONFLICT_OVERLAPPING_REVISIONS` with both listed. Run it yourself:
+
+```bash
+kccs-evidence assess --db artifacts/my.sqlite --tenant T-KAVERI --event EXC-107133 --knowledge-cutoff alert                  # as known at the alert
+kccs-evidence assess --db artifacts/my.sqlite --tenant T-KAVERI --event EXC-107133 --knowledge-cutoff 2026-09-14T23:59:00Z   # as known later
+```
+
+The two answers get different assessment IDs, and the first one never changes, even after later corrections. This is what lets an inspector ask "what did you know when you signed?" years later (AUD-2603).
 
 ## 2. Data model (production, Postgres per cell)
 
