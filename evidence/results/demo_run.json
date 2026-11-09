@@ -13,8 +13,8 @@
     "brief_case_EXC-107133": {
       "event_id": "EXC-107133",
       "tenant": "T-KAVERI",
-      "at_alert": "ASM-669e9e1d77c3ae0b6a6c75d9",
-      "at_extract": "ASM-6d22f4e6e940e6bfbd8a0863",
+      "at_alert": "ASM-b920c8d03004c712c883fb4a",
+      "at_extract": "ASM-e301f0da23e6da659f419dd6",
       "status_at_alert": "ABSTAIN_BLOCKING_EVIDENCE_GAPS",
       "blocking_at_alert": [
         "SOP_REVISION_OVERLAP",
@@ -39,8 +39,8 @@
     "sop_overlap": {
       "event_id": "EXC-112821",
       "tenant": "T-KAVERI",
-      "at_alert": "ASM-ec255f8c30cab1213477d385",
-      "at_extract": "ASM-0700a47296bc42513f1ca9ab",
+      "at_alert": "ASM-ff8d8e24b2dde03c4829c3a9",
+      "at_extract": "ASM-5e018a5eec41f396b953ba11",
       "status_at_alert": "ABSTAIN_BLOCKING_EVIDENCE_GAPS",
       "blocking_at_alert": [
         "SOP_REVISION_OVERLAP",
@@ -64,8 +64,8 @@
     "unreferenced_stability_candidate": {
       "event_id": "EXC-111519",
       "tenant": "T-VIRENT",
-      "at_alert": "ASM-bac8cd3d24b8e2754a20c6f3",
-      "at_extract": "ASM-a4ec12fd118cf2a48dcce741",
+      "at_alert": "ASM-5274e17ab74f15ac44d3e0b5",
+      "at_extract": "ASM-623563ba34e1505dad359a01",
       "status_at_alert": "ABSTAIN_BLOCKING_EVIDENCE_GAPS",
       "blocking_at_alert": [
         "NO_SOP_INDEXED",
@@ -94,8 +94,8 @@
     "wrong_presentation_referenced": {
       "event_id": "EXC-110336",
       "tenant": "T-VIRENT",
-      "at_alert": "ASM-4cbcaba018dcb9660774a28c",
-      "at_extract": "ASM-fcdbb23c8dc48fc1cd853034",
+      "at_alert": "ASM-fcbefc60a43532876626d667",
+      "at_extract": "ASM-94b8e7b1e968ad9d457535e0",
       "status_at_alert": "ABSTAIN_BLOCKING_EVIDENCE_GAPS",
       "blocking_at_alert": [
         "NO_SOP_INDEXED",
@@ -126,8 +126,8 @@
     "firmware_learned_after_alert": {
       "event_id": "EXC-110336",
       "tenant": "T-VIRENT",
-      "at_alert": "ASM-4cbcaba018dcb9660774a28c",
-      "at_extract": "ASM-fcdbb23c8dc48fc1cd853034",
+      "at_alert": "ASM-fcbefc60a43532876626d667",
+      "at_extract": "ASM-94b8e7b1e968ad9d457535e0",
       "status_at_alert": "ABSTAIN_BLOCKING_EVIDENCE_GAPS",
       "blocking_at_alert": [
         "NO_SOP_INDEXED",
@@ -158,8 +158,8 @@
     "product_ref_missing": {
       "event_id": "EXC-112198",
       "tenant": "T-AURA",
-      "at_alert": "ASM-22ef950b12b0bd2326f8484b",
-      "at_extract": "ASM-d550ae9c1ccdee25e30ae144",
+      "at_alert": "ASM-bb51ff32d0cb1448ca3b8a4d",
+      "at_extract": "ASM-aa2caabaf4707eaa37e00396",
       "status_at_alert": "ABSTAIN_BLOCKING_EVIDENCE_GAPS",
       "blocking_at_alert": [
         "PRODUCT_REF_MISSING",
@@ -185,8 +185,8 @@
     "next_business_day_policy_incomplete": {
       "event_id": "EXC-112352",
       "tenant": "T-PINNACLE",
-      "at_alert": "ASM-612b430fd9ad3405e3e49977",
-      "at_extract": "ASM-c358b9985f41972735d4cf19",
+      "at_alert": "ASM-b6300290044116341b633571",
+      "at_extract": "ASM-e86462aa6ac4b16fe0dce2d3",
       "status_at_alert": "ABSTAIN_BLOCKING_EVIDENCE_GAPS",
       "blocking_at_alert": [
         "GATEWAY_GAP_SPANS_EXCURSION",
@@ -214,12 +214,12 @@
     "label": "SIMULATED correction (not a real Kestrel change)",
     "record": "02_Product_Master/R57",
     "new_source_version": 2,
-    "original_assessment": "ASM-669e9e1d77c3ae0b6a6c75d9",
-    "original_payload_sha256_before": "d670daef18007faa6587669682df8c5f25a1d632b5743f849b9412d53352df4d",
-    "original_payload_sha256_after": "d670daef18007faa6587669682df8c5f25a1d632b5743f849b9412d53352df4d",
+    "original_assessment": "ASM-b920c8d03004c712c883fb4a",
+    "original_payload_sha256_before": "a96adc00931f43c2b4f8255647d10ff619e5568aac83cb34cc5b7446cbc1eac5",
+    "original_payload_sha256_after": "a96adc00931f43c2b4f8255647d10ff619e5568aac83cb34cc5b7446cbc1eac5",
     "original_unchanged": true,
-    "new_assessment": "ASM-d47720fd41e2b790f6b3eaba",
-    "supersedes": "ASM-6d22f4e6e940e6bfbd8a0863",
+    "new_assessment": "ASM-05d9c98a6e382a6d3d50d54b",
+    "supersedes": "ASM-e301f0da23e6da659f419dd6",
     "change": {
       "added_findings": [],
       "removed_findings": [
@@ -242,40 +242,40 @@
   "audit_denials": 1,
   "packages_verified": [
     {
-      "package": "artifacts/e2e/packages/ASM-22ef950b12b0bd2326f8484b",
+      "package": "artifacts/e2e/packages/ASM-5274e17ab74f15ac44d3e0b5",
       "ok": true,
       "problems": [],
-      "package_digest": "272a559b136f6e9cc910c9d706b0b8a99c9210232a93d860c332e4cd2e2fab94"
+      "package_digest": "d09c35ec8f8786c15331493323169859dd221dd0d387cb4aef16f03abec0544c"
     },
     {
-      "package": "artifacts/e2e/packages/ASM-4cbcaba018dcb9660774a28c",
+      "package": "artifacts/e2e/packages/ASM-b6300290044116341b633571",
       "ok": true,
       "problems": [],
-      "package_digest": "fbf36da91602060eb22655deca2d2ef616047f4dfaca8bc52047751d955f8811"
+      "package_digest": "ea00fb000c6d17f50aa97d92ec1393a8de9f18d9e51697c34af54e588b2ef743"
     },
     {
-      "package": "artifacts/e2e/packages/ASM-612b430fd9ad3405e3e49977",
+      "package": "artifacts/e2e/packages/ASM-b920c8d03004c712c883fb4a",
       "ok": true,
       "problems": [],
-      "package_digest": "c1c11dcdb711fc3e97ec8a0b2e093d867ed922543006e00752149400e5504ed6"
+      "package_digest": "6dbfc58ca9bec7a2a7f44818dc530511688c86048d5f6e2d8f94ee5082eb9a04"
     },
     {
-      "package": "artifacts/e2e/packages/ASM-669e9e1d77c3ae0b6a6c75d9",
+      "package": "artifacts/e2e/packages/ASM-bb51ff32d0cb1448ca3b8a4d",
       "ok": true,
       "problems": [],
-      "package_digest": "91f29e478d63c55f5e624ae2f0643a69babecaa096e2ffc654eb83c8e01c5ec9"
+      "package_digest": "bf37fdbd26498feec1a384ee6f8e830dcbc74b7b5d05e4eb10c0c9a881887c53"
     },
     {
-      "package": "artifacts/e2e/packages/ASM-bac8cd3d24b8e2754a20c6f3",
+      "package": "artifacts/e2e/packages/ASM-fcbefc60a43532876626d667",
       "ok": true,
       "problems": [],
-      "package_digest": "25b92750c2eae076d8777b97d495e7e37e3727f0e7c4aa0630210bf02739c745"
+      "package_digest": "0f31b2f02eb82a3ecb0e4635a085283984e7bc4c325644a22730d22ee6a1d03d"
     },
     {
-      "package": "artifacts/e2e/packages/ASM-ec255f8c30cab1213477d385",
+      "package": "artifacts/e2e/packages/ASM-ff8d8e24b2dde03c4829c3a9",
       "ok": true,
       "problems": [],
-      "package_digest": "78f75b5fe59aadb0a4293fdb383321c301328054a9938ea41aa5416ac172dca4"
+      "package_digest": "a039c686116debe85e425fbb4857af9e789c9fce76cf43bff27cdfef1bdb3a08"
     }
   ]
 }

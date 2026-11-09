@@ -96,11 +96,11 @@ kccs-evidence assess --db artifacts/my.sqlite --tenant T-KAVERI --event EXC-1071
 
 **Expect:**
 ```
-ASM-669e9e1d77c3ae0b6a6c75d9 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
-ASM-6d22f4e6e940e6bfbd8a0863 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-b920c8d03004c712c883fb4a status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
+ASM-e301f0da23e6da659f419dd6 status=ABSTAIN_BLOCKING_EVIDENCE_GAPS stored=new
 ```
 
-The first ID is identical on every machine and every run. Same evidence and same cutoff give the same ID.
+The first ID is identical on every machine, Python version and run. The ID is a fingerprint of the evidence, the knowledge cutoff and the exact code and rule versions, so the same inputs always give the same ID. Any change to the code or rules gives a different ID by design.
 
 ## Step 8: Check customer separation
 
@@ -114,16 +114,16 @@ echo "exit code: $?"
 ## Step 9: Export an evidence package and prove it cannot be altered
 
 ```bash
-kccs-evidence export-package --db artifacts/my.sqlite --assessment-id ASM-669e9e1d77c3ae0b6a6c75d9 \
+kccs-evidence export-package --db artifacts/my.sqlite --assessment-id ASM-b920c8d03004c712c883fb4a \
     --tenant-scope T-KAVERI --out-dir artifacts/my_packages
-kccs-evidence verify-package artifacts/my_packages/ASM-669e9e1d77c3ae0b6a6c75d9
+kccs-evidence verify-package artifacts/my_packages/ASM-b920c8d03004c712c883fb4a
 ```
 
 **Expect:** `"ok": true`. Now change the package and verify again:
 
 ```bash
-sed -i 's/ABSTAIN_BLOCKING_EVIDENCE_GAPS/READY_FOR_QA_REVIEW/' artifacts/my_packages/ASM-669e9e1d77c3ae0b6a6c75d9/assessment.json
-kccs-evidence verify-package artifacts/my_packages/ASM-669e9e1d77c3ae0b6a6c75d9
+sed -i 's/ABSTAIN_BLOCKING_EVIDENCE_GAPS/READY_FOR_QA_REVIEW/' artifacts/my_packages/ASM-b920c8d03004c712c883fb4a/assessment.json
+kccs-evidence verify-package artifacts/my_packages/ASM-b920c8d03004c712c883fb4a
 ```
 
 **Expect:** `"ok": false` and `"problems": ["hash mismatch assessment.json"]`, with exit code 2. (On macOS, use `sed -i ''`.)
