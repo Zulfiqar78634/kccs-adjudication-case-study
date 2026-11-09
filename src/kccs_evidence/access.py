@@ -5,19 +5,19 @@ SQL by tenant_code, caches live on the view (so they are tenant-keyed by
 construction), and evaluation-only data (reviewer logs, override reasons,
 historical outcomes) is not reachable from this interface at all.
 """
+
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Callable
 
 from .config_loader import load_config
 from .store import Store, VersionedRecord
 from .temporal import UTC, iso
 
 SHARED_SHEETS = {"03_Facility_Registry", "04_Carrier_Contracts", "11_Systems_Inventory", "14_Incident_Log"}
-TENANT_SHEETS = {"01_Excursion_Events", "02_Product_Master", "05_SOP_Index", "06_Stability_Index",
-                 "12_Tenant_Constraints"}
+TENANT_SHEETS = {"01_Excursion_Events", "02_Product_Master", "05_SOP_Index", "06_Stability_Index", "12_Tenant_Constraints"}
 KESTREL_OWNED_ALIAS_KINDS = {"FACILITY", "CARRIER"}
 
 
@@ -41,16 +41,22 @@ class TenantView:
     store: Store
     principal: Principal
     tenant: str
-    as_known_at: str | None = None          # store cutoff (recorded_at) as ISO UTC; None = now
+    as_known_at: str | None = None  # store cutoff (recorded_at) as ISO UTC; None = now
     clock: Callable[[], datetime] = system_clock
-    knowledge_cutoff: str | None = None     # true knowledge cutoff for human assertions; defaults to as_known_at
+    knowledge_cutoff: str | None = None  # true knowledge cutoff for human assertions; defaults to as_known_at
     _cache: dict = field(default_factory=dict, repr=False)
 
     def __post_init__(self) -> None:
         if self.tenant not in self.principal.tenants:
-            self.store.audit(at=iso(self.clock()), actor=self.principal.actor_id, tenant=self.tenant,
-                             action="TENANT_VIEW_OPEN", target=self.tenant, outcome="DENIED",
-                             detail={"principal_tenants": sorted(self.principal.tenants)})
+            self.store.audit(
+                at=iso(self.clock()),
+                actor=self.principal.actor_id,
+                tenant=self.tenant,
+                action="TENANT_VIEW_OPEN",
+                target=self.tenant,
+                outcome="DENIED",
+                detail={"principal_tenants": sorted(self.principal.tenants)},
+            )
             raise TenantAccessDenied(f"{self.principal.actor_id} is not authorised for {self.tenant}")
 
     def tenant_records(self, sheet: str) -> list[VersionedRecord]:
@@ -88,6 +94,7 @@ class TenantView:
             if r.record_key == event_id:
                 return r
         # Do not reveal whether the event exists under another tenant.
-        self.store.audit(at=iso(self.clock()), actor=self.principal.actor_id, tenant=self.tenant,
-                         action="EVENT_READ", target=event_id, outcome="NOT_FOUND_IN_TENANT")
+        self.store.audit(
+            at=iso(self.clock()), actor=self.principal.actor_id, tenant=self.tenant, action="EVENT_READ", target=event_id, outcome="NOT_FOUND_IN_TENANT"
+        )
         raise KeyError(f"{event_id} not found for tenant {self.tenant}")

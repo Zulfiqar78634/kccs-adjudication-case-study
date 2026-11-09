@@ -1,6 +1,6 @@
-# 01 — Where we land
+# Deliverable 1: Where I land
 
-*Candidate: Zulfiqar. Drafted with heavy AI assistance (see `06_working_log.md`); every number below was produced by the code in this repository from the supplied workbook unless marked as an assumption.*
+*Candidate: Zulfiqar. Drafted with heavy AI assistance (see the [working log](../4-working-log/working-log.md)); every number below was produced by the code in this repository from the supplied workbook unless marked as an assumption.*
 
 References: **B§n p.m** = brief section/page; **`NN!Rk`** = workbook tab and Excel row; event IDs are as in `01_Excursion_Events`.
 
@@ -30,13 +30,13 @@ Four concepts are kept separate throughout: **(a)** non-actionable alert closure
 | R6 | Full basis retrievable in < 1 h for 7 years | Board #3; AUD-2603 | Immutable, hashed evidence package per assessment and signature | `test_export_and_verify`, `test_tampering_detected`; retrieval SLO in ops | 1 |
 | R7 | Notification clock from alert receipt, independent of disposition | B§2 p.2; `00!R43,R46`; `13!R22`; INC-2502 | Separate obligation state machine; waits never pause it | `test_obligations.py` (9 tests) | 1 |
 | R8 | Storms must not starve other tenants' obligations | INC-2502 (4 breaches) | One obligation per alert; earliest-deadline-first | `test_storm_*` | 1 |
-| R9 | Version traceability of every behaviour-affecting artefact; notify on change | B§4 p.4 (de Vries); INC-2411, INC-2509 | Execution manifest in every assessment; replay gate before change | manifest fields; `05` pipeline gates | 1 |
+| R9 | Version traceability of every behaviour-affecting artefact; notify on change | B§4 p.4 (de Vries); INC-2411, INC-2509 | Execution manifest in every assessment; replay gate before change | manifest fields; pipeline gates in [detailed design](../2-design/detailed-design.md) §7 | 1 |
 | R10 | No cross-tenant derived artefacts (Meridian Cl.22) | `12!R6`; INC-2512 | Per-tenant indexes, caches, eval sets; untenanted product aliases quarantined | `test_tenant_isolation.py` (12 tests) | 1 |
 | R11 | Residency (EU-only, India-only), model API prohibitions | `12!R2,R3,R4`; 14 of 26 others residency, 6 API-prohibited (`12!R10`) | Regional cells; "no-LLM" is a supported route | Deployment design; route policy per tenant | 1–3 |
 | R12 | Tenant signing rules (dual, Part 11, named individual, Responsável Técnico) | `12` who_signs_a_disposition | Signature policy per tenant | `disposition_authority` in every assessment; LLD signature guards | 1–2 |
 | R13 | Portuguese regulator-facing output (T-CAMPOS) | `12!R8`; EXC-110595 | Human-approved pt-BR templates | Design only | 2 |
 | R14 | Retrospective evaluation before go-live and every change | B§6 p.6 (Dr Rao) | Replay harness and per-tenant regression report | `evaluation.py` + `artifacts/evaluation/summary.md` | 1 |
-| R15 | Quiet-day cost floor near zero; stay within ceiling | B§4 p.4 (Okoro); `13!R25–27` | Pay-per-use or no-model routes; no always-on GPU | `02` §cost | 1 |
+| R15 | Quiet-day cost floor near zero; stay within ceiling | B§4 p.4 (Okoro); `13!R25–27` | Pay-per-use or no-model routes; no always-on GPU | [architecture](../2-design/architecture.md) §9 | 1 |
 | R16 | Missing evidence is never favourable | Dr Rao, B§4 p.4 | Abstention with reasons; status never READY with blockers | `test_never_a_disposition_across_all_events` | 1 |
 
 ## 3. Explicit non-goals
@@ -58,9 +58,9 @@ Four concepts are kept separate throughout: **(a)** non-actionable alert closure
 | Half-open `[from, to)` site-local dates | Closed intervals, or UTC dates | 115 hand-overs have `to == next from`; closed intervals would make each one a one-day overlap |
 | Quarantine untenanted product aliases | Use `07` as a lookup table | No tenant provenance, so we cannot prove an alias is not Meridian-derived (Cl.22) |
 | Separate notification obligation ledger | Notification as a case state | EXC-110553: a reviewer released early to meet a 72 h window that a 9-day lab test would miss |
-| "No LLM" as a first-class route | Self-hosting for prohibited tenants | One always-on g5.12xlarge is $4,139/month, above the whole $3,000 budget (see `02` §9) |
+| "No LLM" as a first-class route | Self-hosting for prohibited tenants | One always-on g5.12xlarge is $4,139/month, above the whole $3,000 budget (see [architecture](../2-design/architecture.md) §9) |
 
-## 5. Contradictions and assumptions register (top items; full list in `04`)
+## 5. Contradictions and assumptions register (top items; full list in [data findings](data-findings-and-assumptions.md))
 
 | Evidence | Conflict or gap | Position taken | Risk | Who resolves |
 |---|---|---|---|---|
@@ -105,6 +105,6 @@ Why not the tempting alternatives:
 1. **Median < 24 h to signed disposition.** Disposition latency is not notification latency. Medians hide the tail: a lab result takes 9 days (EXC-110553), so a target met on the median can coexist with month-old quarantines. Report **p50, p90 and max age per wait state** (carrier data, lab, document control). Exclude externally-blocked time from *our* latency but never from the obligation clock.
 2. **≥ 70% closed without a person.** The denominator must be **all alerts**. Today 64% = 78% × 82%. Reaching 70% means closing ~85% of non-actionables. Allowed only for closures with **no product decision** (verified duplicate, verified no-product-in-room, sensor artefact with corroboration), with an audited false-closure rate. The auto-closed population has never been audited (`00!R36`). In this pack, 273 of 275 engine AUTO_CLOSE rows had case-specific evidence gaps in the kernel (stratified sample: a reason to audit, not an estimate). **We challenge the target as an incentive:** pressure to close more invites disguising product release as "closure". Counter-proposal: 70% *safe* closure, measured by a monthly blind audit sample of closures.
 3. **Basis within the hour, seven years.** We accept this; it is the prototype's core.
-4. **Cost ceiling.** We accept it with headroom. The design spends ~$575/month of $2,939 (`02` §9).
+4. **Cost ceiling.** We accept it with headroom. The design spends ~$575/month of $2,939 ([architecture](../2-design/architecture.md) §9).
 5. **No late notifications.** Software cannot guarantee this alone: notifiability is a human determination, and transport and acknowledgement depend on regulators. We commit to **100% obligation creation at alert receipt**, earliest-deadline-first queues isolated from storms, escalation at proposed T-24 h / T-6 h / T-1 h, and acknowledgement-based completion, and we report breaches transparently.
 6. **First customer in 90 days; all 34 in nine months.** The first is feasible (above). For all 34 we commit to onboarding, not to equal maturity.

@@ -1,7 +1,8 @@
 """Stability evidence, limit arithmetic and firmware uncertainty on real workbook cases."""
-import pytest
 
+import pytest
 from conftest import clock, principal
+
 from kccs_evidence.access import TenantView
 from kccs_evidence.assessment import build_assessment
 from kccs_evidence.model import Resolution
@@ -19,9 +20,9 @@ def test_exc_107133_wrong_presentation_partial_and_unreferenced_candidate(store)
     assert "presentation mismatch" in reasons and "Partial" in reasons and "Accelerated" in reasons
     cands = {c["study_ref"]: c for c in st["unreferenced_candidates"]}
     assert cands["STB-2738"]["admissible"] is True
-    assert cands["STB-4400"]["admissible"] is False and cands["STB-4400"]["permitted_excursion_text"] is None   # unreadable
+    assert cands["STB-4400"]["admissible"] is False and cands["STB-4400"]["permitted_excursion_text"] is None  # unreadable
     assert st["status"] == "CANDIDATE_ONLY"
-    assert "STABILITY_MASTER_VS_STUDY_CONFLICT" in a["blocking_reasons"]          # master 'cumulative 72 h' vs study 'once, 6 h < 15 °C'
+    assert "STABILITY_MASTER_VS_STUDY_CONFLICT" in a["blocking_reasons"]  # master 'cumulative 72 h' vs study 'once, 6 h < 15 °C'
     aid = {i["statement"].split(":")[-1].strip() for i in a["reviewer_aid"]["items"]}
     assert "WITHIN_STATED_LIMIT_FOR_THIS_EVENT_ONLY" in aid and "CUMULATIVE_UNVERIFIABLE" in aid
 
@@ -39,7 +40,7 @@ def test_exc_110497_pfs_product_vial_study_rejected(store):
 def test_unreadable_study_with_index_limit_text_is_not_relied_on(store):
     view = TenantView(store, principal("T-AURA"), "T-AURA", clock=clock)
     stb = {s.record_key: s for s in view.tenant_records("06_Stability_Index")}
-    assert stb["STB-5652"].get("permitted_excursion_text")                  # the index row has text...
+    assert stb["STB-5652"].get("permitted_excursion_text")  # the index row has text...
     res = assess_study(stb["STB-5652"], {"brand_as_labelled": "Somavance depot 120mg", "generic_inn": "lanreotide-vsp"}, "T-AURA")
     assert not res["admissible"] and res["permitted_excursion_text"] is None  # ...but it is never used
     assert any("unreadable" in r for r in res["rejection_reasons"])
@@ -48,7 +49,7 @@ def test_unreadable_study_with_index_limit_text_is_not_relied_on(store):
 def test_missing_and_unindexed_study_refs_are_explicit(store, snapshot):
     view = TenantView(store, principal("T-KAVERI"), "T-KAVERI", clock=clock)
     rows = {r.source_ref: r for r in view.tenant_records("02_Product_Master")}
-    blank = rows["02_Product_Master!R55"]                          # Frigovac-B, no stability_study_ref
+    blank = rows["02_Product_Master!R55"]  # Frigovac-B, no stability_study_ref
     res = Resolution("PRODUCT", "product", "x", "RESOLVED", blank.source_ref, attributes=dict(blank.payload))
     ev = {"max_temp_c": 9.0, "min_temp_c": 4.0, "duration_min": 20}
     out, findings = assess_stability(view, res, ev, (2.0, 8.0), None)
@@ -64,15 +65,18 @@ def test_missing_and_unindexed_study_refs_are_explicit(store, snapshot):
     assert "absence is not evidence" in msg
 
 
-@pytest.mark.parametrize("text, kind", [
-    ("One excursion, up to 6 h below 15 °C", "SINGLE_BELOW_CEILING"),
-    ("≤ 6 h to 15 °C, once only", "SINGLE_BELOW_CEILING"),
-    ("Cumulative 72 h above 8 °C permitted across shelf life", "CUMULATIVE_ABOVE"),
-    ("No excursion above 25 °C permitted", "CEILING"),
-    ("Refer QA", "REFER_QA"),
-    ("Do not freeze", "NO_FREEZE"),
-    ("Something new", "UNPARSED"),
-])
+@pytest.mark.parametrize(
+    "text, kind",
+    [
+        ("One excursion, up to 6 h below 15 °C", "SINGLE_BELOW_CEILING"),
+        ("≤ 6 h to 15 °C, once only", "SINGLE_BELOW_CEILING"),
+        ("Cumulative 72 h above 8 °C permitted across shelf life", "CUMULATIVE_ABOVE"),
+        ("No excursion above 25 °C permitted", "CEILING"),
+        ("Refer QA", "REFER_QA"),
+        ("Do not freeze", "NO_FREEZE"),
+        ("Something new", "UNPARSED"),
+    ],
+)
 def test_limit_parsing(text, kind):
     assert parse_limit(text)["kind"] == kind
 
@@ -104,8 +108,17 @@ def test_cumulative_allowance_never_reported_as_satisfied():
     assert res["status"] == "CUMULATIVE_UNVERIFIABLE" and res["unverifiable_conditions"]
 
 
-@pytest.mark.parametrize("text, rng", [("2-8 °C", (2.0, 8.0)), ("+2/+8 C", (2.0, 8.0)), ("2°C – 8°C", (2.0, 8.0)),
-                                       ("FROZEN (-25,-15)", (-25.0, -15.0)), ("Store below 25 C", (None, 25.0)),
-                                       ("Controlled room temperature", None), ("LN2 vapour phase (-196 nominal)", None)])
+@pytest.mark.parametrize(
+    "text, rng",
+    [
+        ("2-8 °C", (2.0, 8.0)),
+        ("+2/+8 C", (2.0, 8.0)),
+        ("2°C – 8°C", (2.0, 8.0)),
+        ("FROZEN (-25,-15)", (-25.0, -15.0)),
+        ("Store below 25 C", (None, 25.0)),
+        ("Controlled room temperature", None),
+        ("LN2 vapour phase (-196 nominal)", None),
+    ],
+)
 def test_spec_parsing_does_not_assume(text, rng):
     assert parse_spec_range(text) == rng
